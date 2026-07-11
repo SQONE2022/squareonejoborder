@@ -6,7 +6,7 @@
     <title>Square One Customs - Production Dashboard</title>
     <style>
         /* ==========================================================================
-           1. DASHBOARD LAYOUT (SIDE-BY-SIDE / MAGKATABI CONFIGURATION)
+           1. DASHBOARD LAYOUT (SIDE-BY-SIDE CONFIGURATION)
            ========================================================================== */
         * {
             box-sizing: border-box !important;
@@ -20,7 +20,6 @@
             min-height: 100vh;
         }
 
-        /* Container para magkatabi ang Form at Preview */
         .dashboard-container {
             display: flex;
             flex-direction: row;
@@ -32,7 +31,7 @@
             width: 100%;
         }
 
-        /* PERFECT 100% SCALE PRINT SETTINGS */
+        /* EXACT WYSIWYG PRINT SCALE - NO SHIFTING, NO OVERFLOW */
         @media print {
             @page {
                 size: A4 portrait;
@@ -42,8 +41,8 @@
                 padding: 0 !important;
                 margin: 0 !important;
                 background-color: #ffffff;
-                overflow: visible !important; 
-                height: auto !important;
+                overflow: hidden !important; 
+                height: 297mm !important;
                 display: block !important;
             }
             .dashboard-container {
@@ -59,17 +58,25 @@
                 height: auto !important;
                 gap: 0 !important;
                 padding: 0 !important;
-                width: 100% !important;
+                width: 210mm !important; 
+                margin: 0 auto !important;
+                display: block !important;
+                position: relative !important;
             }
+            
+            /* Selyadong sukat para sa A4 Paper */
             .a4-container {
                 border: none !important;
                 box-shadow: none !important;
                 margin: 0 !important;
-                padding: 10mm 12mm !important; 
-                page-break-after: always;
-                page-break-inside: avoid;
+                padding: 12mm 15mm !important; 
                 width: 210mm !important;
                 height: 297mm !important;
+                max-height: 297mm !important;
+                overflow: hidden !important;
+                position: relative !important; 
+                page-break-after: always;
+                page-break-inside: avoid;
             }
             
             .plain-page-two:not(.has-content) {
@@ -78,6 +85,48 @@
             
             .a4-container:last-child {
                 page-break-after: avoid;
+            }
+
+            /* I-freeze ang sukat ng gitnang bahagi */
+            .middle-content {
+                height: 168mm !important; 
+                max-height: 168mm !important;
+                min-height: 168mm !important;
+                overflow: hidden !important;
+                display: flex !important;
+                flex-direction: row !important;
+            }
+
+            .left-images-box {
+                width: 50% !important;
+                height: 100% !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            .right-text-box {
+                width: 50% !important;
+                height: 100% !important;
+                max-height: 100% !important;
+                overflow: hidden !important;
+            }
+
+            .unified-image-box-primary {
+                height: 70mm !important;
+                max-height: 70mm !important;
+                min-height: 70mm !important;
+                overflow: hidden !important;
+            }
+
+            .unified-image-box-secondary {
+                flex: 1 !important;
+                width: 100% !important;
+                height: auto !important;
+                max-height: none !important;
+                min-height: 50mm !important;
+                overflow: hidden !important;
+                display: block !important;
+                text-align: left !important;
             }
         }
 
@@ -118,7 +167,6 @@
             margin: 0;
         }
 
-        /* Grid setups para sa magkatabing fields sa loob ng form */
         .form-row-2-col {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -174,7 +222,6 @@
             cursor: pointer;
         }
 
-        /* Compact Customization boxes for Sidebar */
         .fieldset-compact {
             border: 1px solid #ced4da; 
             border-radius: 6px; 
@@ -191,7 +238,6 @@
             padding: 0 5px;
         }
 
-        /* Bottom Controls Wrapper */
         .form-controls-wrapper {
             display: flex;
             flex-direction: column;
@@ -248,7 +294,6 @@
             flex-shrink: 0;
         }
 
-        /* PAGE 2 - PLAIN DESIGN */
         .a4-container.plain-page-two {
             padding: 15mm 15mm;
             background: #ffffff;
@@ -269,7 +314,7 @@
             background: #ffe6e6;
             padding: 5px;
             margin-bottom: 10px;
-                }
+        }
 
         @media print {
             .plain-page-two.is-hidden-preview {
@@ -286,9 +331,6 @@
             color: #000000;
             white-space: pre-wrap;
             outline: none;
-        }
-        .page-two-content-area:focus {
-            outline: 2px dashed #7A0A0A;
         }
 
         .doc-header {
@@ -355,15 +397,17 @@
         .bg-light-green-row { background-color: #C6E0B4 !important; }
         .bg-gray-row { background-color: #F2F2F2 !important; }
 
-        /* Middle Content Area */
+        /* STRICT MIDDLE CONTENT CONSTRAINT */
         .middle-content {
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
-            flex-grow: 1; 
+            height: 168mm; 
+            max-height: 168mm;
+            min-height: 168mm;
             margin-bottom: 10px;
             overflow: hidden;
-            min-height: 0; 
+            flex-shrink: 0;
         }
         
         .left-images-box {
@@ -372,10 +416,11 @@
             flex-direction: column;
             gap: 4px;
             padding-right: 5px;
+            height: 100%;
         }
 
         .unified-image-box-primary {
-            border: 1px solid #000000 !important;
+            border: 2px solid #000000 !important;
             background-color: #ffffff;
             padding: 4px;
             display: flex;
@@ -385,23 +430,30 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            flex-grow: 1;
-            min-height: 140px;
+            height: 70mm;
+            max-height: 70mm;
+            min-height: 70mm;
         }
 
+        /* FIXED: BAGONG LAYOUT PARA SA SECONDARY BOX (KATULAD NA NG MAIN DETAILED TEXT) */
         .unified-image-box-secondary {
             border: none !important;
             background-color: transparent;
-            padding: 4px;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            gap: 4px;
-            justify-content: center;
-            align-items: center;
+            padding: 5px;
+            display: block !important; /* Ginawang block para natural ang bagsak ng text mula taas pababa */
+            text-align: left !important; /* Laging nakasandal sa kaliwa ang text */
+            font-size: 13px;
+            font-weight: bold;
+            line-height: 1.4;
+            white-space: pre-wrap; /* Para gumana ang Enter key */
             overflow: hidden;
-            flex-grow: 1;
-            min-height: 140px;
+            flex: 1 !important;
+            width: 100% !important;
+            min-height: 50mm;
+            outline: none;
+        }
+        .unified-image-box-secondary:focus {
+            outline: 2px dashed #7A0A0A;
         }
 
         .right-text-box {
@@ -409,8 +461,9 @@
             border: 2px solid #000000;
             padding: 10px;
             background-color: #ffffff;
-            overflow-y: auto;
+            overflow: hidden; 
             position: relative;
+            height: 100%;
         }
         .right-text-box:focus-within {
             outline: 2px dashed #7A0A0A;
@@ -424,27 +477,29 @@
             font-weight: bold; 
             white-space: pre-wrap;
             width: 100%;
-            min-height: 100%;
+            height: 100%;
+            max-height: 100%;
             outline: none;
+            overflow: hidden;
         }
 
-        /* ==========================================================================
-           MICROSOFT WORD / LAYOUT OPTIONS SYSTEM
-           ========================================================================== */
+        /* REMOVED BORDERS FROM ATTACHED IMAGES */
         .wrapper-image-node {
             position: relative;
             display: inline-block;
-            width: 130px;
-            height: 120px;
-            border: 1px solid #ddd;
-            background: #fff;
+            margin: 4px;
+            vertical-align: top;
+            border: none !important; 
+            background: transparent;
         }
 
         .wrapper-image-node.layout-in-front {
             position: absolute !important;
             z-index: 5000;
             cursor: move;
-            border: 2px solid #7A0A0A;
+            border: none !important; 
+            width: 130px;
+            height: 120px;
         }
 
         .wrapper-image-node img {
@@ -452,6 +507,7 @@
             height: 100%;
             object-fit: contain;
             display: block;
+            border: none !important;
         }
 
         .layout-options-menu-btn {
@@ -543,6 +599,7 @@
             color: #aaa; 
             font-weight: bold;
             text-align: center;
+            display: block;
         }
         
         .mockup-label-box {
@@ -563,18 +620,9 @@
         }
         
         .below-image-text {
-            font-size: 10px;
-            font-weight: bold;
-            text-align: center;
-            min-height: 14px;
-            margin-top: 1px;
-            color: #000000 !important;
-            outline: none;
+            display: none; /* Tinanggal na ito dahil pwedeng mag-type direkta sa secondary box */
         }
 
-        /* ==========================================================================
-           MOVABLE & DELETABLE TOTAL BOX WRAPPERS
-           ========================================================================== */
         .total-box-wrapper {
             position: absolute; 
             cursor: move; 
@@ -626,6 +674,7 @@
             justify-content: flex-end;
             margin-bottom: 0;
             flex-shrink: 0; 
+            height: 38mm; 
         }
 
         .lineup-table {
@@ -653,7 +702,7 @@
         .status-cell { width: 12%; text-align: center; font-weight: bold; }
         
         .status-yes { color: #385723 !important; background-color: #E2EFDA !important; }
-        .status-no { color: #c00000 !important; background-color: #fce4d6 !important; font-style: italic; text-decoration: none !important; }
+        .status-no { color: #c00000 !important; background-color: #fce4d6 !important; font-style: italic; }
         
         .service-type-cell { width: 18%; text-align: center; }
         .services-header-cell { text-align: center; font-size: 9px; }
@@ -668,16 +717,13 @@
 </head>
 <body>
 
-    <!-- FLEX WRAPPER PARA SA SIDE-BY-SIDE CONFIG -->
     <div class="dashboard-container">
 
-        <!-- LEFT SIDEBAR: PRODUCTION ENTRY FORM -->
         <div class="form-panel" id="production-form-panel">
             <div class="form-header-area">
                 <h2 class="form-title">Production Entry Form</h2>
             </div>
             
-            <!-- TEXT CUSTOMIZATION (COMPACT ROW) -->
             <fieldset class="fieldset-compact" style="color: #7A0A0A;">
                 <legend>Text Customization</legend>
                 <div class="form-group">
@@ -707,7 +753,6 @@
                 </div>
             </fieldset>
 
-            <!-- CLIENT NAME & DATE -->
             <div class="form-row-2-col">
                 <div class="form-group">
                     <label>Client Name</label>
@@ -719,7 +764,6 @@
                 </div>
             </div>
 
-            <!-- J.O & TEAM NAME -->
             <div class="form-row-2-col">
                 <div class="form-group">
                     <label>J.O #</label>
@@ -731,7 +775,6 @@
                 </div>
             </div>
 
-            <!-- PRODUCT NAME & FABRICS -->
             <div class="form-row-2-col">
                 <div class="form-group">
                     <label>Product name</label>
@@ -743,11 +786,10 @@
                 </div>
             </div>
 
-            <!-- TEXT LAYOUT IMAGE & TOTAL BOX 1 TEXT -->
             <div class="form-row-2-col">
                 <div class="form-group">
-                    <label>Text Layout Image</label>
-                    <textarea id="input-below-secondary" placeholder="E.g., Kids size note" class="nav-field"></textarea>
+                    <label>Text Layout / Notes Image</label>
+                    <textarea id="input-below-secondary" placeholder="I-type ang layout note dito..." class="nav-field"></textarea>
                 </div>
                 <div class="form-group">
                     <label>Total Box 1 Text</label>
@@ -755,7 +797,6 @@
                 </div>
             </div>
 
-            <!-- LINE UP STATUS BOXES -->
             <fieldset class="fieldset-compact" style="color: #2F5597;">
                 <legend>Line Up Status</legend>
                 <div class="form-group">
@@ -788,7 +829,6 @@
                 </div>
             </fieldset>
 
-            <!-- UPLOADERS AREA -->
             <div class="form-group">
                 <label style="font-weight: bold; color: #7A0A0A;">Primary Mockups</label>
                 <input type="file" id="input-primary-gallery" multiple accept="image/*" class="nav-field">
@@ -816,16 +856,15 @@
                 <input type="file" id="canvas-image-uploader" multiple accept="image/*" class="nav-field">
             </div>
 
-            <!-- SIDEBAR ACTION CONTROLS -->
             <div class="form-controls-wrapper">
                 <div class="total-box-btns">
                     <button type="button" style="flex:1; background: #2F5597; color: white; border: none; padding: 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer;" 
-                            onclick="document.getElementById('draggable-total-box-1').style.display='block';">
-                        🔄 Show Total 1
+                            onclick="showTotalBox('draggable-total-box-1', 'global-a4-paper-1')">
+                        🔄 Show Total 1 (P1)
                     </button>
                     <button type="button" style="flex:1; background: #2F5597; color: white; border: none; padding: 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer;" 
-                            onclick="document.getElementById('draggable-total-box-2').style.display='block';">
-                        🔄 Show Total 2
+                            onclick="showTotalBox('draggable-total-box-2', 'global-a4-paper-2')">
+                        🔄 Show Total 2 (P2)
                     </button>
                 </div>
 
@@ -833,25 +872,21 @@
             </div>
         </div>
 
-        <!-- RIGHT SIDE: LIVE A4 PREVIEW AREA -->
         <div class="preview-panel" id="global-preview-panel">
             
-            <!-- PAGE 1 -->
             <div class="a4-container" id="global-a4-paper-1">
                 
-                <!-- TOTAL BOX 1 -->
                 <div class="total-box-wrapper interaction-movable-node" id="draggable-total-box-1">
                     <table class="total-table">
-                        <button class="total-delete-btn" onclick="document.getElementById('draggable-total-box-1').style.display='none';">×</button>
+                        <button class="total-delete-btn" onclick="document.getElementById('draggable-total-box-1').style.display='none'; checkPageTwoContent();">×</button>
                         <tr><td class="total-header">TOTAL</td></tr>
                         <tr><td class="total-value status-yes" id="preview-total" contenteditable="true"></td></tr>
                     </table>
                 </div>
 
-                <!-- TOTAL BOX 2 -->
                 <div class="total-box-wrapper interaction-movable-node" id="draggable-total-box-2">
                     <table class="total-table">
-                        <button class="total-delete-btn" onclick="document.getElementById('draggable-total-box-2').style.display='none';">×</button>
+                        <button class="total-delete-btn" onclick="document.getElementById('draggable-total-box-2').style.display='none'; checkPageTwoContent();">×</button>
                         <tr><td class="total-header">TOTAL</td></tr>
                         <tr><td class="total-value bg-peach-light" id="preview-total-2" contenteditable="true"></td></tr>
                     </table>
@@ -897,11 +932,8 @@
                         <div class="mockup-value-box bg-yellow editable-cell" id="preview-mockup-text-val" contenteditable="true">TSN AIRCOOL</div>
                         <div class="mockup-value-box bg-yellow">TABAS</div>
                         
-                        <div class="unified-image-box-secondary" id="box-secondary-container">
-                            <span class="placeholder-text" id="secondary-placeholder"></span>
-                        </div>
-
-                        <div class="below-image-text editable-cell" id="preview-below-text" contenteditable="true"></div>
+                        <!-- UPDATED: Ginawang fully text-editable block container para natural pababa ang text layout -->
+                        <div class="unified-image-box-secondary" id="box-secondary-container" contenteditable="true"></div>
                     </div>
 
                     <div class="right-text-box">
@@ -957,7 +989,6 @@
 
             </div>
 
-            <!-- PAGE 2 -->
             <div class="a4-container plain-page-two is-hidden-preview" id="global-a4-paper-2">
                 <div class="page-two-content-area" contenteditable="true" id="preview-page-two-main-text"></div>
             </div>
@@ -971,8 +1002,10 @@
         const fontSizeSelect = document.getElementById('input-font-size');
         const textColorInput = document.getElementById('input-text-color');
         const mainTextEl = document.getElementById('preview-main-text');
+        const secondaryTextEl = document.getElementById('box-secondary-container');
         const pageTwoTextEl = document.getElementById('preview-page-two-main-text');
         const previewPanel = document.getElementById("global-preview-panel");
+        const paper1 = document.getElementById("global-a4-paper-1");
         const paper2 = document.getElementById("global-a4-paper-2");
 
         const pageTwoDefaultPlaceholder = "";
@@ -981,15 +1014,13 @@
         function checkPageTwoContent() {
             const rawText = pageTwoTextEl.innerText.trim();
             let hasFloatingElementsOnPageTwo = false;
-            const paper2Rect = paper2.getBoundingClientRect();
 
-            const movables = document.querySelectorAll('.wrapper-image-node.layout-in-front, .total-box-wrapper');
-            movables.forEach(node => {
-                const nodeRect = node.getBoundingClientRect();
-                if (nodeRect.top >= paper2Rect.top && nodeRect.top <= paper2Rect.bottom) {
-                    hasFloatingElementsOnPageTwo = true;
-                }
-            });
+            const imagesOnP2 = paper2.querySelectorAll('.wrapper-image-node.layout-in-front').length > 0;
+            const totalBoxesOnP2 = Array.from(paper2.querySelectorAll('.total-box-wrapper')).some(node => node.style.display !== 'none');
+
+            if (imagesOnP2 || totalBoxesOnP2) {
+                hasFloatingElementsOnPageTwo = true;
+            }
 
             if ((rawText !== "" && rawText !== pageTwoDefaultPlaceholder) || hasFloatingElementsOnPageTwo) {
                 paper2.classList.remove('is-hidden-preview');
@@ -998,6 +1029,18 @@
                 paper2.classList.add('is-hidden-preview');
                 paper2.classList.remove('has-content');
             }
+        }
+
+        function showTotalBox(boxId, pageId) {
+            const box = document.getElementById(boxId);
+            const targetPage = document.getElementById(pageId);
+            box.style.display = 'block';
+            if (box.parentElement !== targetPage) {
+                targetPage.appendChild(box);
+                box.style.top = "150mm";
+                box.style.left = "145mm";
+            }
+            checkPageTwoContent();
         }
 
         pageTwoTextEl.addEventListener('input', checkPageTwoContent);
@@ -1015,14 +1058,17 @@
 
         fontStyleSelect.addEventListener('change', (e) => { 
             mainTextEl.style.fontFamily = e.target.value; 
+            secondaryTextEl.style.fontFamily = e.target.value; 
             pageTwoTextEl.style.fontFamily = e.target.value; 
         });
         fontSizeSelect.addEventListener('change', (e) => { 
             mainTextEl.style.fontSize = e.target.value; 
+            secondaryTextEl.style.fontSize = e.target.value; 
             pageTwoTextEl.style.fontSize = e.target.value; 
         });
         textColorInput.addEventListener('input', (e) => { 
             mainTextEl.style.color = e.target.value; 
+            secondaryTextEl.style.color = e.target.value; 
             pageTwoTextEl.style.color = e.target.value; 
         });
 
@@ -1033,7 +1079,6 @@
             { id: 'input-team', target: 'preview-team-label', isTextarea: false },
             { id: 'input-meta-right', target: 'preview-meta-right', isTextarea: false },
             { id: 'input-mockup-text', target: 'preview-mockup-text-val', isTextarea: false },
-            { id: 'input-below-secondary', target: 'preview-below-text', isTextarea: false },
             { id: 'input-total-value', target: 'preview-total', isTextarea: false },
             { id: 'input-total-value-2', target: 'preview-total-2', isTextarea: false }
         ];
@@ -1050,6 +1095,11 @@
                     }
                 });
             }
+        });
+
+        // I-sync ang form control ng Text Layout papunta sa secondary box area
+        document.getElementById('input-below-secondary').addEventListener('input', function(e) {
+            secondaryTextEl.innerHTML = e.target.value.replace(/\n/g, '<br>');
         });
 
         document.getElementById('input-detailed-text').addEventListener('input', function(e) {
@@ -1070,28 +1120,65 @@
             }
         });
 
-        // MS WORD ENGINE FOR IMAGES 
-        function makeImageWordInteractive(wrapper, defaultContainerId) {
+        function makeElementDraggableInsideItsA4Page(elementId) {
+            const el = document.getElementById(elementId);
             let isDragging = false;
-            let isResizing = false;
-            let startX, startY, startWidth, startHeight, startLeft, startTop;
+            let startX, startY, startLeft, startTop;
 
-            wrapper.addEventListener('mousedown', function(e) {
-                if (!wrapper.classList.contains('layout-in-front')) return;
-                if (e.target.closest('.word-layout-popup') || e.target.className === 'image-resizer-handle' || e.target.className === 'delete-btn-overlay' || e.target.className === 'layout-options-menu-btn') return;
+            el.addEventListener('mousedown', function(e) {
+                if (el.classList.contains('wrapper-image-node') && !el.classList.contains('layout-in-front')) return;
+                if (e.target.closest('.word-layout-popup') || e.target.className === 'image-resizer-handle' || e.target.className === 'delete-btn-overlay' || e.target.className === 'layout-options-menu-btn' || e.target.className === 'total-delete-btn' || e.target.className === 'total-value') return;
+                
+                const currentA4Page = el.closest('.a4-container') || paper1;
                 
                 isDragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
                 
-                const rect = wrapper.getBoundingClientRect();
-                const parentRect = previewPanel.getBoundingClientRect();
+                const rect = el.getBoundingClientRect();
+                const parentRect = currentA4Page.getBoundingClientRect();
                 
                 startLeft = rect.left - parentRect.left;
                 startTop = rect.top - parentRect.top;
                 
                 e.preventDefault();
             });
+
+            window.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                
+                const p1Rect = paper1.getBoundingClientRect();
+                const p2Rect = paper2.getBoundingClientRect();
+                let activePage = paper1;
+
+                if (e.clientY >= p2Rect.top) {
+                    activePage = paper2;
+                }
+
+                if (el.parentElement !== activePage) {
+                    activePage.appendChild(el);
+                }
+
+                const activePageRect = activePage.getBoundingClientRect();
+                let computedLeft = startLeft + (e.clientX - startX);
+                let computedTop = e.clientY - activePageRect.top - (startY - startTop - (el.closest('.a4-container') === paper1 ? p1Rect.top : p2Rect.top));
+
+                el.style.left = computedLeft + 'px';
+                el.style.top = computedTop + 'px';
+                checkPageTwoContent(); 
+            });
+
+            window.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    checkPageTwoContent();
+                }
+            });
+        }
+
+        function makeImageWordInteractive(wrapper, defaultContainerId) {
+            let isResizing = false;
+            let startX, startY, startWidth, startHeight;
 
             const resizer = wrapper.querySelector('.image-resizer-handle');
             if(resizer) {
@@ -1107,13 +1194,6 @@
             }
 
             window.addEventListener('mousemove', function(e) {
-                if (isDragging) {
-                    let newLeft = startLeft + (e.clientX - startX);
-                    let newTop = startTop + (e.clientY - startY);
-                    wrapper.style.left = newLeft + 'px';
-                    wrapper.style.top = newTop + 'px';
-                    checkPageTwoContent(); 
-                }
                 if (isResizing) {
                     let newWidth = startWidth + (e.clientX - startX);
                     let newHeight = startHeight + (e.clientY - startY);
@@ -1123,9 +1203,7 @@
             });
 
             window.addEventListener('mouseup', function() {
-                isDragging = false;
                 isResizing = false;
-                checkPageTwoContent();
             });
 
             const menuBtn = wrapper.querySelector('.layout-options-menu-btn');
@@ -1147,6 +1225,8 @@
                     wrapper.style.position = 'relative';
                     wrapper.style.top = 'auto';
                     wrapper.style.left = 'auto';
+                    wrapper.style.width = 'auto';
+                    wrapper.style.height = 'auto';
                     document.getElementById(defaultContainerId).appendChild(wrapper);
                     checkPageTwoContent();
                 }
@@ -1155,24 +1235,30 @@
             frontRadio.addEventListener('change', function() {
                 if(this.checked) {
                     wrapper.classList.add('layout-in-front');
-                    wrapper.style.top = '280px';
-                    wrapper.style.left = '220px';
-                    previewPanel.appendChild(wrapper); 
+                    wrapper.style.top = '140mm';
+                    wrapper.style.left = '40mm';
+                    wrapper.style.width = '130px';
+                    wrapper.style.height = '120px';
+                    paper1.appendChild(wrapper); 
                     checkPageTwoContent();
                 }
             });
         }
 
+        let imgCounter = 0;
         function buildWordImageNode(src, targetContainerId) {
+            imgCounter++;
+            const currentId = `draggable-img-${imgCounter}`;
             const wrapper = document.createElement('div');
             wrapper.className = 'wrapper-image-node';
+            wrapper.id = currentId;
             
             wrapper.innerHTML = `
                 <button class="layout-options-menu-btn">🌈</button>
                 <div class="word-layout-popup">
                     <p>Layout Options</p>
-                    <label><input type="radio" name="layout-${Math.random()}" class="opt-inline" checked> In Line with Text</label>
-                    <label><input type="radio" name="layout-${Math.random()}" class="opt-front"> In Front (Move Anywhere)</label>
+                    <label><input type="radio" name="layout-${currentId}" class="opt-inline" checked> In Line with Text</label>
+                    <label><input type="radio" name="layout-${currentId}" class="opt-front"> In Front (Move Anywhere)</label>
                 </div>
                 <button class="delete-btn-overlay">×</button>
                 <img src="${src}">
@@ -1186,10 +1272,10 @@
             
             document.getElementById(targetContainerId).appendChild(wrapper);
             makeImageWordInteractive(wrapper, targetContainerId);
+            makeElementDraggableInsideItsA4Page(currentId); 
             checkPageTwoContent();
         }
 
-        // Image Loaders
         document.getElementById('input-primary-gallery').addEventListener('change', function(e) {
             Array.from(e.target.files).forEach(file => {
                 const reader = new FileReader();
@@ -1206,7 +1292,6 @@
                 reader.onload = function(ev) { buildWordImageNode(ev.target.result, 'box-secondary-container'); };
                 reader.readAsDataURL(file);
             });
-            document.getElementById('secondary-placeholder').style.display = 'none';
             this.value = "";
         });
 
@@ -1219,75 +1304,24 @@
             this.value = "";
         });
 
-        // GLOBAL DRAG FOR TOTAL BOXES
-        function makeTotalBoxCrossPageDrag(boxId) {
-            const box = document.getElementById(boxId);
-            let isDraggingBox = false;
-            let startX, startY, startLeft, startTop;
+        makeElementDraggableInsideItsA4Page("draggable-total-box-1");
+        makeElementDraggableInsideItsA4Page("draggable-total-box-2");
 
-            box.addEventListener("mousedown", function(e) {
-                if (e.target.className === 'total-value' || e.target.className === 'total-delete-btn') return;
-                isDraggingBox = true;
-                
-                const rect = box.getBoundingClientRect();
-                const parentRect = previewPanel.getBoundingClientRect();
-                
-                if (box.parentElement !== previewPanel) {
-                    box.style.left = (rect.left - parentRect.left) + 'px';
-                    box.style.top = (rect.top - parentRect.top) + 'px';
-                    previewPanel.appendChild(box);
-                }
-
-                startX = e.clientX;
-                startY = e.clientY;
-                startLeft = parseFloat(box.style.left) || 0;
-                startTop = parseFloat(box.style.top) || 0;
-                e.preventDefault();
-            });
-
-            window.addEventListener("mousemove", function(e) {
-                if (!isDraggingBox) return;
-                let nextX = startLeft + (e.clientX - startX);
-                let nextY = startTop + (e.clientY - startY);
-                box.style.left = nextX + 'px';
-                box.style.top = nextY + 'px';
-                checkPageTwoContent(); 
-            });
-
-            window.addEventListener("mouseup", () => { 
-                isDraggingBox = false; 
-                checkPageTwoContent();
-            });
-        }
-
-        makeTotalBoxCrossPageDrag("draggable-total-box-1");
-        makeTotalBoxCrossPageDrag("draggable-total-box-2");
-
-        // ==========================================================================
-        // KEYBOARD NAVIGATION SYSTEM (ENTER / SHIFT+ENTER FLOW)
-        // ==========================================================================
         const sequentialFields = Array.from(document.querySelectorAll('.nav-field'));
-
         sequentialFields.forEach((field, index) => {
             field.addEventListener('keydown', function(e) {
-                // Kung Enter o Shift+Enter ang pinindot
                 if (e.key === 'Enter') {
-                    // Exception: Kung textarea, hayaan ang normal na 'Enter' para mag-newline, PERO kapag Shift+Enter, lumipat sa susunod.
                     if (field.tagName.toLowerCase() === 'textarea' && !e.shiftKey) {
-                        return; // Hayaan mag-new line sa loob ng textarea
+                        return; 
                     }
-
-                    e.preventDefault(); // I-stop ang default page/form submit behavior
-                    
+                    e.preventDefault(); 
                     const nextIndex = index + 1;
                     if (nextIndex < sequentialFields.length) {
                         sequentialFields[nextIndex].focus();
-                        // Kung text input, i-select na rin para madaling burahin/palitan
                         if (sequentialFields[nextIndex].tagName.toLowerCase() === 'input' && sequentialFields[nextIndex].type === 'text') {
                             sequentialFields[nextIndex].select();
                         }
                     } else {
-                        // Kung nasa huling field na, i-focus sa Print Button
                         document.getElementById('print-submit-btn').focus();
                     }
                 }
