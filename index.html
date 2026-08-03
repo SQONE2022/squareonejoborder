@@ -89,12 +89,12 @@
 
             /* I-freeze ang sukat ng gitnang bahagi */
             .middle-content {
-                height: 168mm !important; 
-                max-height: 168mm !important;
-                min-height: 168mm !important;
-                overflow: hidden !important;
-                display: flex !important;
-                flex-direction: row !important;
+                display: flex;
+                justify-content: space-between;
+                margin-top: 10px;
+                margin-bottom: 10px;
+                flex-grow: 1; 
+                overflow: hidden;
             }
 
             .left-images-box {
@@ -119,14 +119,21 @@
             }
 
             .unified-image-box-secondary {
-                flex: 1 !important;
-                width: 100% !important;
-                height: auto !important;
-                max-height: none !important;
-                min-height: 50mm !important;
-                overflow: hidden !important;
+                border: 2px solid #000000 !important;
+                background-color: #ffffff;
+                padding: 5px;
                 display: block !important;
                 text-align: left !important;
+                font-size: 13px;
+                font-weight: bold;
+                line-height: 1.4;
+                white-space: pre-wrap;
+                outline: none;
+
+                flex-grow: 1 !important;
+                height: auto !important;
+                width: 100% !important;
+                margin-bottom: 0 !important;
             }
         }
 
@@ -397,17 +404,14 @@
         .bg-light-green-row { background-color: #C6E0B4 !important; }
         .bg-gray-row { background-color: #F2F2F2 !important; }
 
-        /* STRICT MIDDLE CONTENT CONSTRAINT */
         .middle-content {
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
-            height: 168mm; 
-            max-height: 168mm;
-            min-height: 168mm;
+            flex-grow: 1; 
             margin-bottom: 10px;
             overflow: hidden;
-            flex-shrink: 0;
+            min-height: 0; 
         }
         
         .left-images-box {
@@ -416,7 +420,7 @@
             flex-direction: column;
             gap: 4px;
             padding-right: 5px;
-            height: 100%;
+            height: 100% !important;
         }
 
         .unified-image-box-primary {
@@ -435,22 +439,22 @@
             min-height: 70mm;
         }
 
-        /* FIXED: BAGONG LAYOUT PARA SA SECONDARY BOX (KATULAD NA NG MAIN DETAILED TEXT) */
         .unified-image-box-secondary {
             border: none !important;
             background-color: transparent;
             padding: 5px;
-            display: block !important; /* Ginawang block para natural ang bagsak ng text mula taas pababa */
-            text-align: left !important; /* Laging nakasandal sa kaliwa ang text */
+            display: block !important;
+            text-align: left !important;
             font-size: 13px;
             font-weight: bold;
             line-height: 1.4;
-            white-space: pre-wrap; /* Para gumana ang Enter key */
-            overflow: hidden;
-            flex: 1 !important;
-            width: 100% !important;
+            white-space: pre-wrap;
+            flex-grow: 1 !important; 
             min-height: 50mm;
+            width: 100% !important;
+            overflow-y: visible !important;
             outline: none;
+            height: 100%;
         }
         .unified-image-box-secondary:focus {
             outline: 2px dashed #7A0A0A;
@@ -461,7 +465,7 @@
             border: 2px solid #000000;
             padding: 10px;
             background-color: #ffffff;
-            overflow: hidden; 
+            overflow-y: auto;
             position: relative;
             height: 100%;
         }
@@ -483,7 +487,6 @@
             overflow: hidden;
         }
 
-        /* REMOVED BORDERS FROM ATTACHED IMAGES */
         .wrapper-image-node {
             position: relative;
             display: inline-block;
@@ -618,10 +621,6 @@
             padding: 4px;
             color: #000000 !important;
         }
-        
-        .below-image-text {
-            display: none; /* Tinanggal na ito dahil pwedeng mag-type direkta sa secondary box */
-        }
 
         .total-box-wrapper {
             position: absolute; 
@@ -674,9 +673,7 @@
             justify-content: flex-end;
             margin-bottom: 0;
             flex-shrink: 0; 
-            height: 38mm; 
         }
-
         .lineup-table {
             width: 50%;
             border-collapse: collapse;
@@ -716,9 +713,7 @@
     </style>
 </head>
 <body>
-
     <div class="dashboard-container">
-
         <div class="form-panel" id="production-form-panel">
             <div class="form-header-area">
                 <h2 class="form-title">Production Entry Form</h2>
@@ -786,13 +781,14 @@
                 </div>
             </div>
 
+            <!-- TOTAL BOX 1 AT TEXT LAYOUT NOTES SIDE-BY-SIDE -->
             <div class="form-row-2-col">
                 <div class="form-group">
                     <label>Text Layout / Notes Image</label>
                     <textarea id="input-below-secondary" placeholder="I-type ang layout note dito..." class="nav-field"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Total Box 1 Text</label>
+                    <label style="color: #2F5597; font-weight: bold;">Total Box 1 Text</label>
                     <textarea id="input-total-value" placeholder="3PCS" class="nav-field"></textarea>
                 </div>
             </div>
@@ -839,11 +835,10 @@
                 <input type="file" id="input-secondary-gallery" multiple accept="image/*" class="nav-field">
             </div>
 
-            <div class="form-row-2-col">
-                <div class="form-group" style="grid-column: span 2;">
-                    <label style="color: #2F5597; font-weight: bold;">Total Box 2</label>
-                    <textarea type="text" id="input-total-value-2" placeholder="TOTAL PAGE 2" value="" class="nav-field"></textarea>
-                </div>
+            <!-- TOTAL BOX 2 TEXT AREA -->
+            <div class="form-group">
+                <label style="color: #2F5597; font-weight: bold;">Total Box 2 Text</label>
+                <textarea id="input-total-value-2" placeholder="TOTAL PAGE 2" class="nav-field"></textarea>
             </div>
 
             <div class="form-group">
@@ -868,17 +863,25 @@
                     </button>
                 </div>
 
-                <button class="submit-btn" id="print-submit-btn" onclick="window.print()">Generate & Print PDF (A4)</button>
+                <button class="submit-btn" id="print-submit-btn" onclick="window.print()">Generate & Print PDF (A4)</button> 
+                <button class="submit-btn" type="button" onclick="saveProject()">
+                    💾 Save Project (.sq1)
+                </button>
+                <button class="submit-btn" type="button" onclick="newProject()">
+                    📄 New Project
+                </button>
+                <button class="submit-btn" type="button" style="background-color: #555;" onclick="document.getElementById('openProjectFile').click()">
+                    📂 Open Project
+                </button>
+                <input type="file" id="openProjectFile" accept=".sq1,.json" style="display:none" onchange="openProject(event)">
             </div>
         </div>
 
         <div class="preview-panel" id="global-preview-panel">
-            
             <div class="a4-container" id="global-a4-paper-1">
-                
                 <div class="total-box-wrapper interaction-movable-node" id="draggable-total-box-1">
                     <table class="total-table">
-                        <button class="total-delete-btn" onclick="document.getElementById('draggable-total-box-1').style.display='none'; checkPageTwoContent();">×</button>
+                        <button class="total-delete-btn" onclick="document.getElementById('draggable-total-box-1').style.display='none'; checkPageTwoContent(); autoSaveState();">×</button>
                         <tr><td class="total-header">TOTAL</td></tr>
                         <tr><td class="total-value status-yes" id="preview-total" contenteditable="true"></td></tr>
                     </table>
@@ -886,7 +889,7 @@
 
                 <div class="total-box-wrapper interaction-movable-node" id="draggable-total-box-2">
                     <table class="total-table">
-                        <button class="total-delete-btn" onclick="document.getElementById('draggable-total-box-2').style.display='none'; checkPageTwoContent();">×</button>
+                        <button class="total-delete-btn" onclick="document.getElementById('draggable-total-box-2').style.display='none'; checkPageTwoContent(); autoSaveState();">×</button>
                         <tr><td class="total-header">TOTAL</td></tr>
                         <tr><td class="total-value bg-peach-light" id="preview-total-2" contenteditable="true"></td></tr>
                     </table>
@@ -922,7 +925,6 @@
                 </table>
 
                 <div class="middle-content">
-                    
                     <div class="left-images-box">
                         <div class="unified-image-box-primary" id="box-primary-container">
                             <span class="placeholder-text" id="primary-placeholder">Mockup Area</span>
@@ -932,14 +934,12 @@
                         <div class="mockup-value-box bg-yellow editable-cell" id="preview-mockup-text-val" contenteditable="true">TSN AIRCOOL</div>
                         <div class="mockup-value-box bg-yellow">TABAS</div>
                         
-                        <!-- UPDATED: Ginawang fully text-editable block container para natural pababa ang text layout -->
                         <div class="unified-image-box-secondary" id="box-secondary-container" contenteditable="true"></div>
                     </div>
 
                     <div class="right-text-box">
                         <div class="text-body-placeholder" id="preview-main-text" contenteditable="true"></div>
                     </div>
-
                 </div>
 
                 <div class="lineup-container">
@@ -950,79 +950,80 @@
                         <tbody>
                             <tr>
                                 <td class="role-cell bg-peach">GRAPHIC ARTIST</td>
-                                <td class="name-cell" contenteditable="true"></td>
+                                <td class="name-cell" id="lineup-artist" contenteditable="true"></td>
                                 <td colspan="2" class="bg-yellow services-header-cell">SERVICES</td>
                             </tr>
                             <tr>
                                 <td class="role-cell bg-light-yellow">PRINTER OPERATOR</td>
-                                <td class="name-cell" contenteditable="true"></td>
+                                <td class="name-cell" id="lineup-printer" contenteditable="true"></td>
                                 <td class="status-cell status-yes" id="preview-status-printer">YES</td>
                                 <td class="service-type-cell">PRINT</td>
                             </tr>
                             <tr>
                                 <td class="role-cell bg-orange">HEATPRESS OPERATOR</td>
-                                <td class="name-cell" contenteditable="true"></td>
+                                <td class="name-cell" id="lineup-heatpress" contenteditable="true"></td>
                                 <td class="status-cell status-yes" id="preview-status-heatpress">YES</td>
                                 <td class="service-type-cell">PRESS</td>
                             </tr>
                             <tr>
                                 <td class="role-cell bg-gold">SEWER OPERATOR</td>
-                                <td class="name-cell" contenteditable="true"></td>
+                                <td class="name-cell" id="lineup-sewer" contenteditable="true"></td>
                                 <td class="status-cell status-yes" id="preview-status-sewer">YES</td>
                                 <td class="service-type-cell">TRIM</td>
                             </tr>
                             <tr>
                                 <td class="role-cell bg-dark-orange">RELEASING CHECKER</td>
-                                <td class="name-cell" contenteditable="true"></td>
+                                <td class="name-cell" id="lineup-releasing" contenteditable="true"></td>
                                 <td class="status-cell status-yes" id="preview-status-releasing">YES</td>
                                 <td class="service-type-cell">SEW</td>
                             </tr>
                             <tr>
                                 <td class="role-cell bg-soft-green">ENCODER</td>
-                                <td class="name-cell" contenteditable="true"></td>
+                                <td class="name-cell" id="lineup-encoder" contenteditable="true"></td>
                                 <td style="border: 2px solid #000; background-color: #fff;"></td>
                                 <td class="service-type-cell"></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-
             </div>
 
             <div class="a4-container plain-page-two is-hidden-preview" id="global-a4-paper-2">
                 <div class="page-two-content-area" contenteditable="true" id="preview-page-two-main-text"></div>
             </div>
-
         </div>
-
     </div>
 
     <script>
         const fontStyleSelect = document.getElementById('input-font-family');
         const fontSizeSelect = document.getElementById('input-font-size');
         const textColorInput = document.getElementById('input-text-color');
+
         const mainTextEl = document.getElementById('preview-main-text');
         const secondaryTextEl = document.getElementById('box-secondary-container');
         const pageTwoTextEl = document.getElementById('preview-page-two-main-text');
+
         const previewPanel = document.getElementById("global-preview-panel");
         const paper1 = document.getElementById("global-a4-paper-1");
         const paper2 = document.getElementById("global-a4-paper-2");
+
+        let activeTextBox = mainTextEl;
+
+        mainTextEl.addEventListener("focus", () => { activeTextBox = mainTextEl; });
+        secondaryTextEl.addEventListener("focus", () => { activeTextBox = secondaryTextEl; });
+        pageTwoTextEl.addEventListener("focus", () => { activeTextBox = pageTwoTextEl; });
 
         const pageTwoDefaultPlaceholder = "";
         pageTwoTextEl.innerText = pageTwoDefaultPlaceholder;
 
         function checkPageTwoContent() {
             const rawText = pageTwoTextEl.innerText.trim();
-            let hasFloatingElementsOnPageTwo = false;
-
+            
+            // Check floating elements contained in Page 2
             const imagesOnP2 = paper2.querySelectorAll('.wrapper-image-node.layout-in-front').length > 0;
             const totalBoxesOnP2 = Array.from(paper2.querySelectorAll('.total-box-wrapper')).some(node => node.style.display !== 'none');
 
-            if (imagesOnP2 || totalBoxesOnP2) {
-                hasFloatingElementsOnPageTwo = true;
-            }
-
-            if ((rawText !== "" && rawText !== pageTwoDefaultPlaceholder) || hasFloatingElementsOnPageTwo) {
+            if ((rawText !== "" && rawText !== pageTwoDefaultPlaceholder) || imagesOnP2 || totalBoxesOnP2) {
                 paper2.classList.remove('is-hidden-preview');
                 paper2.classList.add('has-content');
             } else {
@@ -1035,15 +1036,16 @@
             const box = document.getElementById(boxId);
             const targetPage = document.getElementById(pageId);
             box.style.display = 'block';
-            if (box.parentElement !== targetPage) {
-                targetPage.appendChild(box);
-                box.style.top = "150mm";
-                box.style.left = "145mm";
-            }
+            
+            targetPage.appendChild(box);
+            box.style.top = "150mm";
+            box.style.left = "145mm";
+
             checkPageTwoContent();
+            autoSaveState();
         }
 
-        pageTwoTextEl.addEventListener('input', checkPageTwoContent);
+        pageTwoTextEl.addEventListener('input', () => { checkPageTwoContent(); autoSaveState(); });
         pageTwoTextEl.addEventListener('focus', function() {
             if (this.innerText.trim() === pageTwoDefaultPlaceholder) {
                 this.innerText = "";
@@ -1054,22 +1056,25 @@
                 this.innerText = pageTwoDefaultPlaceholder;
             }
             checkPageTwoContent();
+            autoSaveState();
         });
 
-        fontStyleSelect.addEventListener('change', (e) => { 
-            mainTextEl.style.fontFamily = e.target.value; 
-            secondaryTextEl.style.fontFamily = e.target.value; 
-            pageTwoTextEl.style.fontFamily = e.target.value; 
+        fontStyleSelect.addEventListener("change", function (e) {
+            if (!activeTextBox) return;
+            activeTextBox.style.fontFamily = e.target.value;
+            autoSaveState();
         });
-        fontSizeSelect.addEventListener('change', (e) => { 
-            mainTextEl.style.fontSize = e.target.value; 
-            secondaryTextEl.style.fontSize = e.target.value; 
-            pageTwoTextEl.style.fontSize = e.target.value; 
+
+        fontSizeSelect.addEventListener("change", function (e) {
+            if (!activeTextBox) return;
+            activeTextBox.style.fontSize = e.target.value;
+            autoSaveState();
         });
-        textColorInput.addEventListener('input', (e) => { 
-            mainTextEl.style.color = e.target.value; 
-            secondaryTextEl.style.color = e.target.value; 
-            pageTwoTextEl.style.color = e.target.value; 
+
+        textColorInput.addEventListener("input", function (e) {
+            if (!activeTextBox) return;
+            activeTextBox.style.color = e.target.value;
+            autoSaveState();
         });
 
         const inputSyncMap = [
@@ -1079,8 +1084,8 @@
             { id: 'input-team', target: 'preview-team-label', isTextarea: false },
             { id: 'input-meta-right', target: 'preview-meta-right', isTextarea: false },
             { id: 'input-mockup-text', target: 'preview-mockup-text-val', isTextarea: false },
-            { id: 'input-total-value', target: 'preview-total', isTextarea: false },
-            { id: 'input-total-value-2', target: 'preview-total-2', isTextarea: false }
+            { id: 'input-total-value', target: 'preview-total', isTextarea: false, boxId: 'draggable-total-box-1' },
+            { id: 'input-total-value-2', target: 'preview-total-2', isTextarea: false, boxId: 'draggable-total-box-2' }
         ];
 
         inputSyncMap.forEach(item => {
@@ -1093,17 +1098,33 @@
                     } else {
                         targetEl.innerText = e.target.value || " ";
                     }
+
+                    // Auto show Total Box if typing in input field while box was hidden
+                    if (item.boxId) {
+                        const box = document.getElementById(item.boxId);
+                        if (box && e.target.value.trim() !== "" && box.style.display === 'none') {
+                            box.style.display = 'block';
+                        }
+                    }
+
+                    checkPageTwoContent();
+                    autoSaveState();
                 });
             }
         });
 
-        // I-sync ang form control ng Text Layout papunta sa secondary box area
         document.getElementById('input-below-secondary').addEventListener('input', function(e) {
-            secondaryTextEl.innerHTML = e.target.value.replace(/\n/g, '<br>');
+            const textNodes = Array.from(secondaryTextEl.childNodes).filter(node => node.nodeType === Node.TEXT_NODE || node.tagName === 'BR');
+            textNodes.forEach(n => n.remove());
+            secondaryTextEl.insertAdjacentHTML('afterbegin', e.target.value.replace(/\n/g, '<br>'));
+            autoSaveState();
         });
 
         document.getElementById('input-detailed-text').addEventListener('input', function(e) {
-            mainTextEl.innerHTML = e.target.value.replace(/\n/g, '<br>');
+            const textNodes = Array.from(mainTextEl.childNodes).filter(node => node.nodeType === Node.TEXT_NODE || node.tagName === 'BR');
+            textNodes.forEach(n => n.remove());
+            mainTextEl.insertAdjacentHTML('afterbegin', e.target.value.replace(/\n/g, '<br>'));
+            autoSaveState();
         });
 
         const operatorKeys = ['printer', 'heatpress', 'sewer', 'releasing'];
@@ -1116,30 +1137,28 @@
                     previewEl.innerText = val;
                     if(val === 'YES') { previewEl.className = "status-cell status-yes"; } 
                     else { previewEl.className = "status-cell status-no"; }
+                    autoSaveState();
                 });
             }
         });
 
+        /* DRAG & DROP LOGIC ACROSS PAGE 1 AND PAGE 2 WITHOUT DISAPPEARING */
         function makeElementDraggableInsideItsA4Page(elementId) {
             const el = document.getElementById(elementId);
+            if (!el) return;
             let isDragging = false;
-            let startX, startY, startLeft, startTop;
+            let grabOffsetX = 0;
+            let grabOffsetY = 0;
 
             el.addEventListener('mousedown', function(e) {
                 if (el.classList.contains('wrapper-image-node') && !el.classList.contains('layout-in-front')) return;
                 if (e.target.closest('.word-layout-popup') || e.target.className === 'image-resizer-handle' || e.target.className === 'delete-btn-overlay' || e.target.className === 'layout-options-menu-btn' || e.target.className === 'total-delete-btn' || e.target.className === 'total-value') return;
                 
-                const currentA4Page = el.closest('.a4-container') || paper1;
-                
                 isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
                 
                 const rect = el.getBoundingClientRect();
-                const parentRect = currentA4Page.getBoundingClientRect();
-                
-                startLeft = rect.left - parentRect.left;
-                startTop = rect.top - parentRect.top;
+                grabOffsetX = e.clientX - rect.left;
+                grabOffsetY = e.clientY - rect.top;
                 
                 e.preventDefault();
             });
@@ -1149,22 +1168,25 @@
                 
                 const p1Rect = paper1.getBoundingClientRect();
                 const p2Rect = paper2.getBoundingClientRect();
+                
+                // Determine target page boundary based on mouse position
                 let activePage = paper1;
-
                 if (e.clientY >= p2Rect.top) {
                     activePage = paper2;
                 }
 
+                // Transfer element node to the active page if shifted
                 if (el.parentElement !== activePage) {
                     activePage.appendChild(el);
                 }
 
                 const activePageRect = activePage.getBoundingClientRect();
-                let computedLeft = startLeft + (e.clientX - startX);
-                let computedTop = e.clientY - activePageRect.top - (startY - startTop - (el.closest('.a4-container') === paper1 ? p1Rect.top : p2Rect.top));
+                let computedLeft = e.clientX - activePageRect.left - grabOffsetX;
+                let computedTop = e.clientY - activePageRect.top - grabOffsetY;
 
                 el.style.left = computedLeft + 'px';
                 el.style.top = computedTop + 'px';
+                
                 checkPageTwoContent(); 
             });
 
@@ -1172,6 +1194,7 @@
                 if (isDragging) {
                     isDragging = false;
                     checkPageTwoContent();
+                    autoSaveState();
                 }
             });
         }
@@ -1203,7 +1226,10 @@
             });
 
             window.addEventListener('mouseup', function() {
-                isResizing = false;
+                if (isResizing) {
+                    isResizing = false;
+                    autoSaveState();
+                }
             });
 
             const menuBtn = wrapper.querySelector('.layout-options-menu-btn');
@@ -1229,6 +1255,7 @@
                     wrapper.style.height = 'auto';
                     document.getElementById(defaultContainerId).appendChild(wrapper);
                     checkPageTwoContent();
+                    autoSaveState();
                 }
             });
 
@@ -1241,24 +1268,30 @@
                     wrapper.style.height = '120px';
                     paper1.appendChild(wrapper); 
                     checkPageTwoContent();
+                    autoSaveState();
                 }
             });
         }
 
         let imgCounter = 0;
-        function buildWordImageNode(src, targetContainerId) {
+        function buildWordImageNode(src, targetContainerId, config = null) {
             imgCounter++;
             const currentId = `draggable-img-${imgCounter}`;
             const wrapper = document.createElement('div');
             wrapper.className = 'wrapper-image-node';
             wrapper.id = currentId;
+
+            const isFront = config && config.isFront;
+            if (isFront) {
+                wrapper.classList.add('layout-in-front');
+            }
             
             wrapper.innerHTML = `
                 <button class="layout-options-menu-btn">🌈</button>
                 <div class="word-layout-popup">
                     <p>Layout Options</p>
-                    <label><input type="radio" name="layout-${currentId}" class="opt-inline" checked> In Line with Text</label>
-                    <label><input type="radio" name="layout-${currentId}" class="opt-front"> In Front (Move Anywhere)</label>
+                    <label><input type="radio" name="layout-${currentId}" class="opt-inline" ${!isFront ? 'checked' : ''}> In Line with Text</label>
+                    <label><input type="radio" name="layout-${currentId}" class="opt-front" ${isFront ? 'checked' : ''}> In Front (Move Anywhere)</label>
                 </div>
                 <button class="delete-btn-overlay">×</button>
                 <img src="${src}">
@@ -1268,18 +1301,32 @@
             wrapper.querySelector('.delete-btn-overlay').onclick = function() { 
                 wrapper.remove(); 
                 checkPageTwoContent();
+                autoSaveState();
             };
+
+            if (config) {
+                if (config.width) wrapper.style.width = config.width;
+                if (config.height) wrapper.style.height = config.height;
+                if (config.top) wrapper.style.top = config.top;
+                if (config.left) wrapper.style.left = config.left;
+            }
             
-            document.getElementById(targetContainerId).appendChild(wrapper);
+            const targetContainer = document.getElementById(targetContainerId) || paper1;
+            targetContainer.appendChild(wrapper);
+            
             makeImageWordInteractive(wrapper, targetContainerId);
             makeElementDraggableInsideItsA4Page(currentId); 
             checkPageTwoContent();
+            return wrapper;
         }
 
         document.getElementById('input-primary-gallery').addEventListener('change', function(e) {
             Array.from(e.target.files).forEach(file => {
                 const reader = new FileReader();
-                reader.onload = function(ev) { buildWordImageNode(ev.target.result, 'box-primary-container'); };
+                reader.onload = function(ev) { 
+                    buildWordImageNode(ev.target.result, 'box-primary-container'); 
+                    autoSaveState();
+                };
                 reader.readAsDataURL(file);
             });
             document.getElementById('primary-placeholder').style.display = 'none';
@@ -1289,7 +1336,10 @@
         document.getElementById('input-secondary-gallery').addEventListener('change', function(e) {
             Array.from(e.target.files).forEach(file => {
                 const reader = new FileReader();
-                reader.onload = function(ev) { buildWordImageNode(ev.target.result, 'box-secondary-container'); };
+                reader.onload = function(ev) { 
+                    buildWordImageNode(ev.target.result, 'box-secondary-container'); 
+                    autoSaveState();
+                };
                 reader.readAsDataURL(file);
             });
             this.value = "";
@@ -1298,7 +1348,10 @@
         document.getElementById('canvas-image-uploader').addEventListener('change', function(e) {
             Array.from(e.target.files).forEach(file => {
                 const reader = new FileReader();
-                reader.onload = function(ev) { buildWordImageNode(ev.target.result, 'preview-main-text'); };
+                reader.onload = function(ev) { 
+                    buildWordImageNode(ev.target.result, 'preview-main-text'); 
+                    autoSaveState();
+                };
                 reader.readAsDataURL(file);
             });
             this.value = "";
@@ -1327,6 +1380,343 @@
                 }
             });
         });
+
+        /* Listen for contenteditable updates directly inside Live A4 Page */
+        document.querySelectorAll('[contenteditable="true"]').forEach(elem => {
+            elem.addEventListener('input', () => {
+                autoSaveState();
+            });
+        });
+
+        /* Extract Image Node details for Saving */
+        function serializeImageNode(node) {
+            const img = node.querySelector('img');
+            return {
+                src: img ? img.src : "",
+                isFront: node.classList.contains('layout-in-front'),
+                width: node.style.width || "",
+                height: node.style.height || "",
+                top: node.style.top || "",
+                left: node.style.left || "",
+                parentId: node.parentElement ? node.parentElement.id : ""
+            };
+        }
+
+        function collectProjectData() {
+            const allImageNodes = Array.from(document.querySelectorAll('.wrapper-image-node'));
+            
+            const primaryImgs = Array.from(document.querySelectorAll('#box-primary-container > .wrapper-image-node')).map(serializeImageNode);
+            const secondaryImgs = Array.from(document.querySelectorAll('#box-secondary-container > .wrapper-image-node')).map(serializeImageNode);
+            const mainTextImgs = Array.from(document.querySelectorAll('#preview-main-text > .wrapper-image-node')).map(serializeImageNode);
+            const floatingImgs = allImageNodes.filter(n => n.classList.contains('layout-in-front')).map(serializeImageNode);
+
+            const total1Box = document.getElementById('draggable-total-box-1');
+            const total2Box = document.getElementById('draggable-total-box-2');
+
+            return {
+                version: "2.3",
+                clientName: document.getElementById("input-client-name").value,
+                date: document.getElementById("input-date").value,
+                jo: document.getElementById("input-jo-text").value,
+                team: document.getElementById("input-team").value,
+                meta: document.getElementById("input-meta-right").value,
+                mockup: document.getElementById("input-mockup-text").value,
+                total1: document.getElementById("preview-total").innerText || document.getElementById("input-total-value").value,
+                total2: document.getElementById("preview-total-2").innerText || document.getElementById("input-total-value-2").value,
+                noteText: document.getElementById("input-below-secondary").value,
+                detailedTextInput: document.getElementById("input-detailed-text").value,
+                
+                // Content HTML / Editable Cells
+                previewClientName: document.getElementById("preview-client-name").innerText,
+                previewDate: document.getElementById("preview-date").innerText,
+                previewJo: document.getElementById("preview-jo-label").innerHTML,
+                previewTeam: document.getElementById("preview-team-label").innerText,
+                previewMeta: document.getElementById("preview-meta-right").innerText,
+                previewMockup: document.getElementById("preview-mockup-text-val").innerText,
+                mainTextHTML: mainTextEl.innerHTML,
+                secondaryTextHTML: secondaryTextEl.innerHTML,
+                page2Text: pageTwoTextEl.innerHTML,
+
+                // Lineup Table Values
+                lineup: {
+                    artist: document.getElementById('lineup-artist').innerText,
+                    printer: document.getElementById('lineup-printer').innerText,
+                    heatpress: document.getElementById('lineup-heatpress').innerText,
+                    sewer: document.getElementById('lineup-sewer').innerText,
+                    releasing: document.getElementById('lineup-releasing').innerText,
+                    encoder: document.getElementById('lineup-encoder').innerText,
+                    statusPrinter: document.getElementById('status-printer').value,
+                    statusHeatpress: document.getElementById('status-heatpress').value,
+                    statusSewer: document.getElementById('status-sewer').value,
+                    statusReleasing: document.getElementById('status-releasing').value
+                },
+
+                // Total Boxes State
+                totalBox1State: {
+                    display: total1Box.style.display,
+                    top: total1Box.style.top,
+                    left: total1Box.style.left,
+                    parent: total1Box.parentElement ? total1Box.parentElement.id : 'global-a4-paper-1'
+                },
+                totalBox2State: {
+                    display: total2Box.style.display,
+                    top: total2Box.style.top,
+                    left: total2Box.style.left,
+                    parent: total2Box.parentElement ? total2Box.parentElement.id : 'global-a4-paper-1'
+                },
+
+                fontMain: {
+                    family: mainTextEl.style.fontFamily,
+                    size: mainTextEl.style.fontSize,
+                    color: mainTextEl.style.color
+                },
+                fontSecondary: {
+                    family: secondaryTextEl.style.fontFamily,
+                    size: secondaryTextEl.style.fontSize,
+                    color: secondaryTextEl.style.color
+                },
+                
+                imagesData: {
+                    primary: primaryImgs,
+                    secondary: secondaryImgs,
+                    mainText: mainTextImgs,
+                    floating: floatingImgs
+                }
+            };
+        }
+
+        /* AUTO-SAVE FUNCTION TO LOCAL STORAGE */
+        function autoSaveState() {
+            try {
+                const data = collectProjectData();
+                localStorage.setItem("sq1_auto_save_dashboard", JSON.stringify(data));
+            } catch(e) {
+                console.warn("Storage full or unavailable for autosave");
+            }
+        }
+
+        /* LOAD DASHBOARD FROM OBJECT DATA */
+        function restoreDashboardData(data) {
+            document.getElementById("input-client-name").value = data.clientName || "";
+            document.getElementById("input-date").value = data.date || "";
+            document.getElementById("input-jo-text").value = data.jo || "";
+            document.getElementById("input-team").value = data.team || "";
+            document.getElementById("input-meta-right").value = data.meta || "";
+            document.getElementById("input-mockup-text").value = data.mockup || "TSN AIRCOOL";
+            document.getElementById("input-total-value").value = data.total1 || "";
+            document.getElementById("input-total-value-2").value = data.total2 || "";
+            document.getElementById("input-below-secondary").value = data.noteText || "";
+            document.getElementById("input-detailed-text").value = data.detailedTextInput || "";
+
+            // Restore editable preview text
+            if (data.previewClientName !== undefined) document.getElementById("preview-client-name").innerText = data.previewClientName;
+            if (data.previewDate !== undefined) document.getElementById("preview-date").innerText = data.previewDate;
+            if (data.previewJo !== undefined) document.getElementById("preview-jo-label").innerHTML = data.previewJo;
+            if (data.previewTeam !== undefined) document.getElementById("preview-team-label").innerText = data.previewTeam;
+            if (data.previewMeta !== undefined) document.getElementById("preview-meta-right").innerText = data.previewMeta;
+            if (data.previewMockup !== undefined) document.getElementById("preview-mockup-text-val").innerText = data.previewMockup;
+            
+            document.getElementById("preview-total").innerText = data.total1 || "";
+            document.getElementById("preview-total-2").innerText = data.total2 || "";
+
+            if (data.page2Text !== undefined) pageTwoTextEl.innerHTML = data.page2Text;
+            if (data.mainTextHTML !== undefined) mainTextEl.innerHTML = data.mainTextHTML;
+            if (data.secondaryTextHTML !== undefined) secondaryTextEl.innerHTML = data.secondaryTextHTML;
+
+            // Restore Lineup Details
+            if (data.lineup) {
+                document.getElementById('lineup-artist').innerText = data.lineup.artist || "";
+                document.getElementById('lineup-printer').innerText = data.lineup.printer || "";
+                document.getElementById('lineup-heatpress').innerText = data.lineup.heatpress || "";
+                document.getElementById('lineup-sewer').innerText = data.lineup.sewer || "";
+                document.getElementById('lineup-releasing').innerText = data.lineup.releasing || "";
+                document.getElementById('lineup-encoder').innerText = data.lineup.encoder || "";
+
+                if (data.lineup.statusPrinter) document.getElementById('status-printer').value = data.lineup.statusPrinter;
+                if (data.lineup.statusHeatpress) document.getElementById('status-heatpress').value = data.lineup.statusHeatpress;
+                if (data.lineup.statusSewer) document.getElementById('status-sewer').value = data.lineup.statusSewer;
+                if (data.lineup.statusReleasing) document.getElementById('status-releasing').value = data.lineup.statusReleasing;
+                
+                operatorKeys.forEach(k => {
+                    const sel = document.getElementById(`status-${k}`);
+                    if(sel) sel.dispatchEvent(new Event('change'));
+                });
+            }
+
+            // Restore Total Boxes Position & Visibility
+            if (data.totalBox1State) {
+                const box1 = document.getElementById('draggable-total-box-1');
+                if (data.totalBox1State.display) box1.style.display = data.totalBox1State.display;
+                if (data.totalBox1State.top) box1.style.top = data.totalBox1State.top;
+                if (data.totalBox1State.left) box1.style.left = data.totalBox1State.left;
+                if (data.totalBox1State.parent && document.getElementById(data.totalBox1State.parent)) {
+                    document.getElementById(data.totalBox1State.parent).appendChild(box1);
+                }
+            }
+
+            if (data.totalBox2State) {
+                const box2 = document.getElementById('draggable-total-box-2');
+                if (data.totalBox2State.display) box2.style.display = data.totalBox2State.display;
+                if (data.totalBox2State.top) box2.style.top = data.totalBox2State.top;
+                if (data.totalBox2State.left) box2.style.left = data.totalBox2State.left;
+                if (data.totalBox2State.parent && document.getElementById(data.totalBox2State.parent)) {
+                    document.getElementById(data.totalBox2State.parent).appendChild(box2);
+                }
+            }
+
+            if (data.fontMain) {
+                if (data.fontMain.family) mainTextEl.style.fontFamily = data.fontMain.family;
+                if (data.fontMain.size) mainTextEl.style.fontSize = data.fontMain.size;
+                if (data.fontMain.color) mainTextEl.style.color = data.fontMain.color;
+            }
+
+            if (data.fontSecondary) {
+                if (data.fontSecondary.family) secondaryTextEl.style.fontFamily = data.fontSecondary.family;
+                if (data.fontSecondary.size) secondaryTextEl.style.fontSize = data.fontSecondary.size;
+                if (data.fontSecondary.color) secondaryTextEl.style.color = data.fontSecondary.color;
+            }
+
+            // Clear existing images before restore
+            document.querySelectorAll('.wrapper-image-node').forEach(node => node.remove());
+
+            // Restore Images
+            if (data.imagesData) {
+                if (data.imagesData.primary && data.imagesData.primary.length > 0) {
+                    document.getElementById('primary-placeholder').style.display = 'none';
+                    data.imagesData.primary.forEach(imgData => {
+                        buildWordImageNode(imgData.src, 'box-primary-container', imgData);
+                    });
+                }
+                if (data.imagesData.secondary) {
+                    data.imagesData.secondary.forEach(imgData => {
+                        buildWordImageNode(imgData.src, 'box-secondary-container', imgData);
+                    });
+                }
+                if (data.imagesData.mainText) {
+                    data.imagesData.mainText.forEach(imgData => {
+                        buildWordImageNode(imgData.src, 'preview-main-text', imgData);
+                    });
+                }
+                if (data.imagesData.floating) {
+                    data.imagesData.floating.forEach(imgData => {
+                        const targetParent = imgData.parentId ? imgData.parentId : 'global-a4-paper-1';
+                        buildWordImageNode(imgData.src, targetParent, imgData);
+                    });
+                }
+            }
+
+            checkPageTwoContent();
+        }
+
+        /* AUTO LOAD ON PAGE REFRESH OR OPEN */
+        window.addEventListener("DOMContentLoaded", () => {
+            const savedData = localStorage.getItem("sq1_auto_save_dashboard");
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    restoreDashboardData(data);
+                } catch(e) {
+                    console.error("Error auto-loading dashboard data", e);
+                }
+            }
+        });
+
+        function getProjectFileName() {
+            const jobNumber = document.getElementById("input-jo-text").value.trim() || "JOB";
+            const clientName = document.getElementById("input-client-name").value.trim();
+            const teamName = document.getElementById("input-team").value.trim();
+            let fileName = `${jobNumber}. ${clientName} ${teamName}`.trim();
+            fileName = fileName.replace(/[\\/:*?"<>|]/g, "");
+            return fileName;
+        }
+
+        function saveProject() {
+            const data = collectProjectData();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = getProjectFileName() + ".sq1";
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function openProject(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    restoreDashboardData(data);
+                    autoSaveState();
+                    alert("Project loaded successfully with all images!");
+                } catch (err) {
+                    alert("Error loading project file: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function newProject() {
+            const confirmNew = confirm("Create a new project?\n\nUnsaved changes will be lost.");
+            if (!confirmNew) return;
+
+            localStorage.removeItem("sq1_auto_save_dashboard");
+
+            document.getElementById("input-client-name").value = "";
+            document.getElementById("input-date").value = "";
+            document.getElementById("input-jo-text").value = "";
+            document.getElementById("input-team").value = "";
+            document.getElementById("input-meta-right").value = "";
+            document.getElementById("input-mockup-text").value = "TSN AIRCOOL";
+            document.getElementById("input-total-value").value = "";
+            document.getElementById("input-total-value-2").value = "";
+            document.getElementById("input-below-secondary").value = "";
+            document.getElementById("input-detailed-text").value = "";
+
+            document.getElementById("preview-client-name").innerText = "";
+            document.getElementById("preview-date").innerText = "";
+            document.getElementById("preview-jo-label").innerText = "";
+            document.getElementById("preview-team-label").innerText = "";
+            document.getElementById("preview-meta-right").innerText = "";
+            document.getElementById("preview-mockup-text-val").innerText = "TSN AIRCOOL";
+            document.getElementById("preview-total").innerText = "";
+            document.getElementById("preview-total-2").innerText = "";
+
+            document.getElementById('lineup-artist').innerText = "";
+            document.getElementById('lineup-printer').innerText = "";
+            document.getElementById('lineup-heatpress').innerText = "";
+            document.getElementById('lineup-sewer').innerText = "";
+            document.getElementById('lineup-releasing').innerText = "";
+            document.getElementById('lineup-encoder').innerText = "";
+
+            if (typeof mainTextEl !== "undefined") mainTextEl.innerHTML = "";
+            if (typeof secondaryTextEl !== "undefined") secondaryTextEl.innerHTML = "";
+            if (typeof pageTwoTextEl !== "undefined") pageTwoTextEl.innerHTML = "";
+
+            document.querySelectorAll(".wrapper-image-node").forEach(node => node.remove());
+            document.getElementById('primary-placeholder').style.display = 'block';
+
+            if (typeof mainTextEl !== "undefined") {
+                mainTextEl.style.fontFamily = "Arial, sans-serif";
+                mainTextEl.style.fontSize = "13px";
+                mainTextEl.style.color = "#000000";
+            }
+            if (typeof secondaryTextEl !== "undefined") {
+                secondaryTextEl.style.fontFamily = "Arial, sans-serif";
+                secondaryTextEl.style.fontSize = "13px";
+                secondaryTextEl.style.color = "#000000";
+            }
+            if (typeof pageTwoTextEl !== "undefined") {
+                pageTwoTextEl.style.fontFamily = "Arial, sans-serif";
+                pageTwoTextEl.style.fontSize = "13px";
+                pageTwoTextEl.style.color = "#000000";
+            }
+
+            checkPageTwoContent();
+            alert("New project created!");
+        }
     </script>
 </body>
 </html>
