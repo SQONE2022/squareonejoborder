@@ -870,10 +870,12 @@
                 <button class="submit-btn" type="button" onclick="newProject()">
                     📄 New Project
                 </button>
-                <button class="submit-btn" type="button" style="background-color: #555;" onclick="document.getElementById('openProjectFile').click()">
+                
+                <!-- OPEN IN NEW TAB BUTTON & HIDDEN INPUT -->
+                <button class="submit-btn" type="button" style="background-color: #555;" onclick="triggerOpenInNewTab()">
                     📂 Open Project
                 </button>
-                <input type="file" id="openProjectFile" accept=".sq1,.json" style="display:none" onchange="openProject(event)">
+                <input type="file" id="openProjectFile" accept=".sq1,.json" style="display:none" onchange="openProjectInNewTab(event)">
             </div>
         </div>
 
@@ -1608,8 +1610,55 @@
             checkPageTwoContent();
         }
 
-        /* AUTO LOAD ON PAGE REFRESH OR OPEN */
+        /* ===========================================================
+           OPEN PROJECT IN NEW TAB LOGIC (INTEGRATED)
+        =========================================================== */
+
+        // 1. I-trigger ang hidden file selector
+        function triggerOpenInNewTab() {
+            document.getElementById('openProjectFile').click();
+        }
+
+        // 2. Basahin ang piniling file at i-save sa sessionStorage bago buksan ang bagong tab
+        function openProjectInNewTab(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileContent = e.target.result;
+                
+                // Save JSON content to sessionStorage
+                sessionStorage.setItem('pending_sq1_project', fileContent);
+                
+                // Open new tab with current page URL
+                window.open(window.location.href, '_blank');
+                
+                // Reset file input
+                event.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+
+        /* AUTO LOAD ON PAGE REFRESH OR OPEN IN NEW TAB */
         window.addEventListener("DOMContentLoaded", () => {
+            // Priority 1: Check kung may pending project file mula sa kakabukas na bagong tab
+            const pendingProjectData = sessionStorage.getItem('pending_sq1_project');
+            
+            if (pendingProjectData) {
+                try {
+                    const data = JSON.parse(pendingProjectData);
+                    restoreDashboardData(data);
+                    autoSaveState();
+                    sessionStorage.removeItem('pending_sq1_project'); // Burahin ang session key para malinis
+                    return;
+                } catch(err) {
+                    console.error("Error loading project file from sessionStorage", err);
+                }
+            }
+
+            // Priority 2: Kung walang bagong binuksan na tab, i-restore ang huling autosave mula sa LocalStorage
             const savedData = localStorage.getItem("sq1_auto_save_dashboard");
             if (savedData) {
                 try {
@@ -1638,24 +1687,6 @@
             a.download = getProjectFileName() + ".sq1";
             a.click();
             URL.revokeObjectURL(a.href);
-        }
-
-        function openProject(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    restoreDashboardData(data);
-                    autoSaveState();
-                    alert("Project loaded successfully with all images!");
-                } catch (err) {
-                    alert("Error loading project file: " + err.message);
-                }
-            };
-            reader.readAsText(file);
         }
 
         function newProject() {
