@@ -1611,7 +1611,7 @@
         }
 
         /* ===========================================================
-           OPEN PROJECT IN NEW TAB LOGIC (INTEGRATED)
+           OPEN PROJECT IN NEW TAB LOGIC (FIXED USING LOCALSTORAGE)
         =========================================================== */
 
         // 1. I-trigger ang hidden file selector
@@ -1619,7 +1619,7 @@
             document.getElementById('openProjectFile').click();
         }
 
-        // 2. Basahin ang piniling file at i-save sa sessionStorage bago buksan ang bagong tab
+        // 2. Basahin ang piniling file at i-save sa localStorage bago buksan ang bagong tab
         function openProjectInNewTab(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1628,8 +1628,8 @@
             reader.onload = function(e) {
                 const fileContent = e.target.result;
                 
-                // Save JSON content to sessionStorage
-                sessionStorage.setItem('pending_sq1_project', fileContent);
+                // Gamitin ang localStorage para mabasa at maipasa sa bagong tab
+                localStorage.setItem('pending_sq1_project', fileContent);
                 
                 // Open new tab with current page URL
                 window.open(window.location.href, '_blank');
@@ -1644,21 +1644,25 @@
         /* AUTO LOAD ON PAGE REFRESH OR OPEN IN NEW TAB */
         window.addEventListener("DOMContentLoaded", () => {
             // Priority 1: Check kung may pending project file mula sa kakabukas na bagong tab
-            const pendingProjectData = sessionStorage.getItem('pending_sq1_project');
+            const pendingProjectData = localStorage.getItem('pending_sq1_project');
             
             if (pendingProjectData) {
                 try {
                     const data = JSON.parse(pendingProjectData);
+                    
+                    // Burahin ang temporary key para sa malinis na susunod na refresh
+                    localStorage.removeItem('pending_sq1_project');
+                    
                     restoreDashboardData(data);
                     autoSaveState();
-                    sessionStorage.removeItem('pending_sq1_project'); // Burahin ang session key para malinis
                     return;
                 } catch(err) {
-                    console.error("Error loading project file from sessionStorage", err);
+                    console.error("Error loading project file from localStorage", err);
+                    localStorage.removeItem('pending_sq1_project');
                 }
             }
 
-            // Priority 2: Kung walang bagong binuksan na tab, i-restore ang huling autosave mula sa LocalStorage
+            // Priority 2: Kung walang bagong binuksan na project file, i-restore ang huling autosave
             const savedData = localStorage.getItem("sq1_auto_save_dashboard");
             if (savedData) {
                 try {
