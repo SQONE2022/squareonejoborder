@@ -744,6 +744,11 @@
                         <option value="18px">18px</option>
                         <option value="24px">24px</option>
                         <option value="32px">32px</option>
+                        <option value="40px">40px</option>
+                        <option value="48px">48px</option>
+                        <option value="56px">56px</option>
+                        <option value="64px">64px</option>
+                        <option value="72px">72px</option>
                     </select>
                 </div>
             </fieldset>
@@ -772,7 +777,7 @@
 
             <div class="form-row-2-col">
                 <div class="form-group">
-                    <label>Product name</label>
+                    <label>Cloting name</label>
                     <input type="text" id="input-meta-right" placeholder="E.g., Extra Info" class="nav-field">
                 </div>
                 <div class="form-group">
@@ -997,6 +1002,12 @@
     </div>
 
     <script>
+        // GENERATE UNIQUE TAB SESSION ID TO PREVENT MULTI-TAB OVERWRITES
+        if (!sessionStorage.getItem('tab_session_id')) {
+            sessionStorage.setItem('tab_session_id', 'sq1_tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5));
+        }
+        let currentTabKey = sessionStorage.getItem('tab_session_id');
+
         const fontStyleSelect = document.getElementById('input-font-family');
         const fontSizeSelect = document.getElementById('input-font-size');
         const textColorInput = document.getElementById('input-text-color');
@@ -1487,11 +1498,11 @@
             };
         }
 
-        /* AUTO-SAVE FUNCTION TO LOCAL STORAGE */
+        /* AUTO-SAVE FUNCTION TO LOCAL STORAGE WITH TAB ISOLATION */
         function autoSaveState() {
             try {
                 const data = collectProjectData();
-                localStorage.setItem("sq1_auto_save_dashboard", JSON.stringify(data));
+                localStorage.setItem(currentTabKey, JSON.stringify(data));
             } catch(e) {
                 console.warn("Storage full or unavailable for autosave");
             }
@@ -1632,7 +1643,7 @@
                 localStorage.setItem('pending_sq1_project', fileContent);
                 
                 // Open new tab with current page URL
-                window.open(window.location.href, '_blank');
+                window.open(window.location.href.split('?')[0], '_blank');
                 
                 // Reset file input
                 event.target.value = '';
@@ -1643,6 +1654,21 @@
 
         /* AUTO LOAD ON PAGE REFRESH OR OPEN IN NEW TAB */
         window.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // KUNG NEW PROJECT ANG CLINICK:
+            if (urlParams.get('new') === 'true') {
+                // I-clear ang address bar parameter para malinis ang URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Mag-assign ng bagong session ID para sa bagong tab
+                currentTabKey = 'sq1_tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                sessionStorage.setItem('tab_session_id', currentTabKey);
+                
+                // Huwag nang mag-restore ng anumang lumang project (Blank workspace)
+                return; 
+            }
+
             // Priority 1: Check kung may pending project file mula sa kakabukas na bagong tab
             const pendingProjectData = localStorage.getItem('pending_sq1_project');
             
@@ -1662,8 +1688,8 @@
                 }
             }
 
-            // Priority 2: Kung walang bagong binuksan na project file, i-restore ang huling autosave
-            const savedData = localStorage.getItem("sq1_auto_save_dashboard");
+            // Priority 2: Kung walang bagong binuksan na project file, i-restore ang huling autosave ng TAB na ito
+            const savedData = localStorage.getItem(currentTabKey);
             if (savedData) {
                 try {
                     const data = JSON.parse(savedData);
@@ -1693,64 +1719,9 @@
             URL.revokeObjectURL(a.href);
         }
 
+        /* NEW PROJECT FUNCTION - OPENS CLEAN BLANK WORKSPACE IN A NEW TAB */
         function newProject() {
-            const confirmNew = confirm("Create a new project?\n\nUnsaved changes will be lost.");
-            if (!confirmNew) return;
-
-            localStorage.removeItem("sq1_auto_save_dashboard");
-
-            document.getElementById("input-client-name").value = "";
-            document.getElementById("input-date").value = "";
-            document.getElementById("input-jo-text").value = "";
-            document.getElementById("input-team").value = "";
-            document.getElementById("input-meta-right").value = "";
-            document.getElementById("input-mockup-text").value = "TSN AIRCOOL";
-            document.getElementById("input-total-value").value = "";
-            document.getElementById("input-total-value-2").value = "";
-            document.getElementById("input-below-secondary").value = "";
-            document.getElementById("input-detailed-text").value = "";
-
-            document.getElementById("preview-client-name").innerText = "";
-            document.getElementById("preview-date").innerText = "";
-            document.getElementById("preview-jo-label").innerText = "";
-            document.getElementById("preview-team-label").innerText = "";
-            document.getElementById("preview-meta-right").innerText = "";
-            document.getElementById("preview-mockup-text-val").innerText = "TSN AIRCOOL";
-            document.getElementById("preview-total").innerText = "";
-            document.getElementById("preview-total-2").innerText = "";
-
-            document.getElementById('lineup-artist').innerText = "";
-            document.getElementById('lineup-printer').innerText = "";
-            document.getElementById('lineup-heatpress').innerText = "";
-            document.getElementById('lineup-sewer').innerText = "";
-            document.getElementById('lineup-releasing').innerText = "";
-            document.getElementById('lineup-encoder').innerText = "";
-
-            if (typeof mainTextEl !== "undefined") mainTextEl.innerHTML = "";
-            if (typeof secondaryTextEl !== "undefined") secondaryTextEl.innerHTML = "";
-            if (typeof pageTwoTextEl !== "undefined") pageTwoTextEl.innerHTML = "";
-
-            document.querySelectorAll(".wrapper-image-node").forEach(node => node.remove());
-            document.getElementById('primary-placeholder').style.display = 'block';
-
-            if (typeof mainTextEl !== "undefined") {
-                mainTextEl.style.fontFamily = "Arial, sans-serif";
-                mainTextEl.style.fontSize = "13px";
-                mainTextEl.style.color = "#000000";
-            }
-            if (typeof secondaryTextEl !== "undefined") {
-                secondaryTextEl.style.fontFamily = "Arial, sans-serif";
-                secondaryTextEl.style.fontSize = "13px";
-                secondaryTextEl.style.color = "#000000";
-            }
-            if (typeof pageTwoTextEl !== "undefined") {
-                pageTwoTextEl.style.fontFamily = "Arial, sans-serif";
-                pageTwoTextEl.style.fontSize = "13px";
-                pageTwoTextEl.style.color = "#000000";
-            }
-
-            checkPageTwoContent();
-            alert("New project created!");
+            window.open(window.location.href.split('?')[0] + '?new=true', '_blank');
         }
     </script>
 </body>
