@@ -868,7 +868,7 @@
                     </button>
                 </div>
 
-                <button class="submit-btn" id="print-submit-btn" onclick="window.print()">Generate & Print PDF (A4)</button> 
+                <button class="submit-btn" id="print-submit-btn" onclick="printAndSavePDF()">Generate & Print PDF (A4)</button> 
                 <button class="submit-btn" type="button" onclick="saveProject()">
                     💾 Save Project (.sq1)
                 </button>
@@ -1724,6 +1724,23 @@
             let fileName = `${jobNumber}. ${clientName} ${teamName}`.trim();
             fileName = fileName.replace(/[\\/:*?"<>|]/g, "");
             return fileName;
+        }
+
+        function printAndSavePDF() {
+            const originalTitle = document.title;
+            const pdfFileName = getProjectFileName();
+            
+            // Set document.title so browser uses it as the default filename when saving PDF
+            if (pdfFileName) {
+                document.title = pdfFileName;
+            }
+
+            window.print();
+
+            // Restore original title after print window opens
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 1000);
         }
 
         function saveProject() {
