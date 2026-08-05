@@ -1002,7 +1002,63 @@
     </div>
 
     <script>
-        // GENERATE UNIQUE TAB SESSION ID TO PREVENT MULTI-TAB OVERWRITES
+        /* ==========================================================================
+           INDEXEDDB UTILITY (FOR LARGE FILES > 30MB)
+           ========================================================================== */
+        const DB_NAME = "SQ1_ProjectDB";
+        const STORE_NAME = "projects";
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME);
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function saveLargeProject(key, data) {
+            try {
+                const db = await openDB();
+                const tx = db.transaction(STORE_NAME, "readwrite");
+                tx.objectStore(STORE_NAME).put(data, key);
+                return tx.complete;
+            } catch (err) {
+                console.error("IndexedDB Save Error:", err);
+            }
+        }
+
+        async function getLargeProject(key) {
+            try {
+                const db = await openDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_NAME, "readonly");
+                    const request = tx.objectStore(STORE_NAME).get(key);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (err) {
+                console.error("IndexedDB Get Error:", err);
+                return null;
+            }
+        }
+
+        async function deleteLargeProject(key) {
+            try {
+                const db = await openDB();
+                const tx = db.transaction(STORE_NAME, "readwrite");
+                tx.objectStore(STORE_NAME).delete(key);
+            } catch (err) {
+                console.error("IndexedDB Delete Error:", err);
+            }
+        }
+
+        // TAB SESSION IDENTIFIER
         if (!sessionStorage.getItem('tab_session_id')) {
             sessionStorage.setItem('tab_session_id', 'sq1_tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5));
         }
@@ -1031,8 +1087,6 @@
 
         function checkPageTwoContent() {
             const rawText = pageTwoTextEl.innerText.trim();
-            
-            // Check floating elements contained in Page 2
             const imagesOnP2 = paper2.querySelectorAll('.wrapper-image-node.layout-in-front').length > 0;
             const totalBoxesOnP2 = Array.from(paper2.querySelectorAll('.total-box-wrapper')).some(node => node.style.display !== 'none');
 
@@ -1112,7 +1166,6 @@
                         targetEl.innerText = e.target.value || " ";
                     }
 
-                    // Auto show Total Box if typing in input field while box was hidden
                     if (item.boxId) {
                         const box = document.getElementById(item.boxId);
                         if (box && e.target.value.trim() !== "" && box.style.display === 'none') {
@@ -1155,7 +1208,6 @@
             }
         });
 
-        /* DRAG & DROP LOGIC ACROSS PAGE 1 AND PAGE 2 WITHOUT DISAPPEARING */
         function makeElementDraggableInsideItsA4Page(elementId) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -1182,13 +1234,11 @@
                 const p1Rect = paper1.getBoundingClientRect();
                 const p2Rect = paper2.getBoundingClientRect();
                 
-                // Determine target page boundary based on mouse position
                 let activePage = paper1;
                 if (e.clientY >= p2Rect.top) {
                     activePage = paper2;
                 }
 
-                // Transfer element node to the active page if shifted
                 if (el.parentElement !== activePage) {
                     activePage.appendChild(el);
                 }
@@ -1266,7 +1316,8 @@
                     wrapper.style.left = 'auto';
                     wrapper.style.width = 'auto';
                     wrapper.style.height = 'auto';
-                    document.getElementById(defaultContainerId).appendChild(wrapper);
+                    const targetContainer = document.getElementById(defaultContainerId) || paper1;
+                    targetContainer.appendChild(wrapper);
                     checkPageTwoContent();
                     autoSaveState();
                 }
@@ -1324,7 +1375,10 @@
                 if (config.left) wrapper.style.left = config.left;
             }
             
-            const targetContainer = document.getElementById(targetContainerId) || paper1;
+            let targetContainer = document.getElementById(targetContainerId);
+            if (!targetContainer) {
+                targetContainer = paper1;
+            }
             targetContainer.appendChild(wrapper);
             
             makeImageWordInteractive(wrapper, targetContainerId);
@@ -1394,14 +1448,12 @@
             });
         });
 
-        /* Listen for contenteditable updates directly inside Live A4 Page */
         document.querySelectorAll('[contenteditable="true"]').forEach(elem => {
             elem.addEventListener('input', () => {
                 autoSaveState();
             });
         });
 
-        /* Extract Image Node details for Saving */
         function serializeImageNode(node) {
             const img = node.querySelector('img');
             return {
@@ -1439,7 +1491,6 @@
                 noteText: document.getElementById("input-below-secondary").value,
                 detailedTextInput: document.getElementById("input-detailed-text").value,
                 
-                // Content HTML / Editable Cells
                 previewClientName: document.getElementById("preview-client-name").innerText,
                 previewDate: document.getElementById("preview-date").innerText,
                 previewJo: document.getElementById("preview-jo-label").innerHTML,
@@ -1450,7 +1501,6 @@
                 secondaryTextHTML: secondaryTextEl.innerHTML,
                 page2Text: pageTwoTextEl.innerHTML,
 
-                // Lineup Table Values
                 lineup: {
                     artist: document.getElementById('lineup-artist').innerText,
                     printer: document.getElementById('lineup-printer').innerText,
@@ -1464,7 +1514,6 @@
                     statusReleasing: document.getElementById('status-releasing').value
                 },
 
-                // Total Boxes State
                 totalBox1State: {
                     display: total1Box.style.display,
                     top: total1Box.style.top,
@@ -1498,18 +1547,16 @@
             };
         }
 
-        /* AUTO-SAVE FUNCTION TO LOCAL STORAGE WITH TAB ISOLATION */
-        function autoSaveState() {
-            try {
-                const data = collectProjectData();
-                localStorage.setItem(currentTabKey, JSON.stringify(data));
-            } catch(e) {
-                console.warn("Storage full or unavailable for autosave");
-            }
+        /* AUTO-SAVE TO INDEXEDDB TO SUPPORT LARGE FILES */
+        async function autoSaveState() {
+            const data = collectProjectData();
+            await saveLargeProject(currentTabKey, data);
         }
 
-        /* LOAD DASHBOARD FROM OBJECT DATA */
+        /* RESTORE DATA */
         function restoreDashboardData(data) {
+            if (!data) return;
+
             document.getElementById("input-client-name").value = data.clientName || "";
             document.getElementById("input-date").value = data.date || "";
             document.getElementById("input-jo-text").value = data.jo || "";
@@ -1521,7 +1568,6 @@
             document.getElementById("input-below-secondary").value = data.noteText || "";
             document.getElementById("input-detailed-text").value = data.detailedTextInput || "";
 
-            // Restore editable preview text
             if (data.previewClientName !== undefined) document.getElementById("preview-client-name").innerText = data.previewClientName;
             if (data.previewDate !== undefined) document.getElementById("preview-date").innerText = data.previewDate;
             if (data.previewJo !== undefined) document.getElementById("preview-jo-label").innerHTML = data.previewJo;
@@ -1536,7 +1582,6 @@
             if (data.mainTextHTML !== undefined) mainTextEl.innerHTML = data.mainTextHTML;
             if (data.secondaryTextHTML !== undefined) secondaryTextEl.innerHTML = data.secondaryTextHTML;
 
-            // Restore Lineup Details
             if (data.lineup) {
                 document.getElementById('lineup-artist').innerText = data.lineup.artist || "";
                 document.getElementById('lineup-printer').innerText = data.lineup.printer || "";
@@ -1556,15 +1601,14 @@
                 });
             }
 
-            // Restore Total Boxes Position & Visibility
             if (data.totalBox1State) {
                 const box1 = document.getElementById('draggable-total-box-1');
                 if (data.totalBox1State.display) box1.style.display = data.totalBox1State.display;
                 if (data.totalBox1State.top) box1.style.top = data.totalBox1State.top;
                 if (data.totalBox1State.left) box1.style.left = data.totalBox1State.left;
-                if (data.totalBox1State.parent && document.getElementById(data.totalBox1State.parent)) {
-                    document.getElementById(data.totalBox1State.parent).appendChild(box1);
-                }
+                
+                const p1 = document.getElementById(data.totalBox1State.parent) || paper1;
+                p1.appendChild(box1);
             }
 
             if (data.totalBox2State) {
@@ -1572,9 +1616,9 @@
                 if (data.totalBox2State.display) box2.style.display = data.totalBox2State.display;
                 if (data.totalBox2State.top) box2.style.top = data.totalBox2State.top;
                 if (data.totalBox2State.left) box2.style.left = data.totalBox2State.left;
-                if (data.totalBox2State.parent && document.getElementById(data.totalBox2State.parent)) {
-                    document.getElementById(data.totalBox2State.parent).appendChild(box2);
-                }
+                
+                const p2 = document.getElementById(data.totalBox2State.parent) || paper1;
+                p2.appendChild(box2);
             }
 
             if (data.fontMain) {
@@ -1589,13 +1633,13 @@
                 if (data.fontSecondary.color) secondaryTextEl.style.color = data.fontSecondary.color;
             }
 
-            // Clear existing images before restore
             document.querySelectorAll('.wrapper-image-node').forEach(node => node.remove());
 
-            // Restore Images
             if (data.imagesData) {
                 if (data.imagesData.primary && data.imagesData.primary.length > 0) {
-                    document.getElementById('primary-placeholder').style.display = 'none';
+                    const placeholder = document.getElementById('primary-placeholder');
+                    if(placeholder) placeholder.style.display = 'none';
+                    
                     data.imagesData.primary.forEach(imgData => {
                         buildWordImageNode(imgData.src, 'box-primary-container', imgData);
                     });
@@ -1612,7 +1656,7 @@
                 }
                 if (data.imagesData.floating) {
                     data.imagesData.floating.forEach(imgData => {
-                        const targetParent = imgData.parentId ? imgData.parentId : 'global-a4-paper-1';
+                        const targetParent = (imgData.parentId && document.getElementById(imgData.parentId)) ? imgData.parentId : 'global-a4-paper-1';
                         buildWordImageNode(imgData.src, targetParent, imgData);
                     });
                 }
@@ -1622,81 +1666,54 @@
         }
 
         /* ===========================================================
-           OPEN PROJECT IN NEW TAB LOGIC (FIXED USING LOCALSTORAGE)
+           HIGH-CAPACITY OPEN IN NEW TAB LOGIC (INDEXEDDB BASED)
         =========================================================== */
 
-        // 1. I-trigger ang hidden file selector
         function triggerOpenInNewTab() {
             document.getElementById('openProjectFile').click();
         }
 
-        // 2. Basahin ang piniling file at i-save sa localStorage bago buksan ang bagong tab
         function openProjectInNewTab(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const fileContent = e.target.result;
-                
-                // Gamitin ang localStorage para mabasa at maipasa sa bagong tab
-                localStorage.setItem('pending_sq1_project', fileContent);
-                
-                // Open new tab with current page URL
-                window.open(window.location.href.split('?')[0], '_blank');
-                
-                // Reset file input
+            reader.onload = async function(e) {
+                try {
+                    const parsedData = JSON.parse(e.target.result);
+                    await saveLargeProject('pending_sq1_project', parsedData);
+                    window.open(window.location.href.split('?')[0], '_blank');
+                } catch(err) {
+                    alert("Hindi mabuksan ang file. Siguraduhing valid na .sq1 file ito.");
+                }
                 event.target.value = '';
             };
             
             reader.readAsText(file);
         }
 
-        /* AUTO LOAD ON PAGE REFRESH OR OPEN IN NEW TAB */
-        window.addEventListener("DOMContentLoaded", () => {
+        /* AUTO LOAD ON INITIALIZATION */
+        window.addEventListener("DOMContentLoaded", async () => {
             const urlParams = new URLSearchParams(window.location.search);
             
-            // KUNG NEW PROJECT ANG CLINICK:
             if (urlParams.get('new') === 'true') {
-                // I-clear ang address bar parameter para malinis ang URL
                 window.history.replaceState({}, document.title, window.location.pathname);
-                
-                // Mag-assign ng bagong session ID para sa bagong tab
                 currentTabKey = 'sq1_tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
                 sessionStorage.setItem('tab_session_id', currentTabKey);
-                
-                // Huwag nang mag-restore ng anumang lumang project (Blank workspace)
                 return; 
             }
 
-            // Priority 1: Check kung may pending project file mula sa kakabukas na bagong tab
-            const pendingProjectData = localStorage.getItem('pending_sq1_project');
-            
-            if (pendingProjectData) {
-                try {
-                    const data = JSON.parse(pendingProjectData);
-                    
-                    // Burahin ang temporary key para sa malinis na susunod na refresh
-                    localStorage.removeItem('pending_sq1_project');
-                    
-                    restoreDashboardData(data);
-                    autoSaveState();
-                    return;
-                } catch(err) {
-                    console.error("Error loading project file from localStorage", err);
-                    localStorage.removeItem('pending_sq1_project');
-                }
+            const pendingProject = await getLargeProject('pending_sq1_project');
+            if (pendingProject) {
+                restoreDashboardData(pendingProject);
+                await deleteLargeProject('pending_sq1_project');
+                await autoSaveState();
+                return;
             }
 
-            // Priority 2: Kung walang bagong binuksan na project file, i-restore ang huling autosave ng TAB na ito
-            const savedData = localStorage.getItem(currentTabKey);
+            const savedData = await getLargeProject(currentTabKey);
             if (savedData) {
-                try {
-                    const data = JSON.parse(savedData);
-                    restoreDashboardData(data);
-                } catch(e) {
-                    console.error("Error auto-loading dashboard data", e);
-                }
+                restoreDashboardData(savedData);
             }
         });
 
@@ -1719,7 +1736,6 @@
             URL.revokeObjectURL(a.href);
         }
 
-        /* NEW PROJECT FUNCTION - OPENS CLEAN BLANK WORKSPACE IN A NEW TAB */
         function newProject() {
             window.open(window.location.href.split('?')[0] + '?new=true', '_blank');
         }
