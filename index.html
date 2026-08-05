@@ -339,6 +339,9 @@
             white-space: pre-wrap;
             outline: none;
         }
+        .page-two-content-area:focus {
+            outline: 2px dashed #7A0A0A;
+        }
 
         .doc-header {
             display: flex;
@@ -437,6 +440,10 @@
             height: 70mm;
             max-height: 70mm;
             min-height: 70mm;
+            outline: none;
+        }
+        .unified-image-box-primary:focus {
+            outline: 2px dashed #7A0A0A;
         }
 
         .unified-image-box-secondary {
@@ -933,8 +940,8 @@
 
                 <div class="middle-content">
                     <div class="left-images-box">
-                        <div class="unified-image-box-primary" id="box-primary-container">
-                            <span class="placeholder-text" id="primary-placeholder">Mockup Area</span>
+                        <div class="unified-image-box-primary" id="box-primary-container" tabindex="0">
+                            <span class="placeholder-text" id="primary-placeholder">Mockup Area (Click & Ctrl+V)</span>
                         </div>
                         
                         <div class="mockup-label-box">MOCKUP</div>
@@ -1087,7 +1094,7 @@
 
         function checkPageTwoContent() {
             const rawText = pageTwoTextEl.innerText.trim();
-            const imagesOnP2 = paper2.querySelectorAll('.wrapper-image-node.layout-in-front').length > 0;
+            const imagesOnP2 = paper2.querySelectorAll('.wrapper-image-node').length > 0;
             const totalBoxesOnP2 = Array.from(paper2.querySelectorAll('.total-box-wrapper')).some(node => node.style.display !== 'none');
 
             if ((rawText !== "" && rawText !== pageTwoDefaultPlaceholder) || imagesOnP2 || totalBoxesOnP2) {
@@ -1387,6 +1394,66 @@
             return wrapper;
         }
 
+        /* ==========================================================
+           DIRECT CTRL + V (PASTE SCREENSHOT) HANDLER FOR LIVE A4 (INC. PAGE 2)
+           ========================================================== */
+        function handleClipboardPasteImage(e, targetContainerId) {
+            const clipboardData = e.clipboardData || window.clipboardData;
+            if (!clipboardData) return;
+
+            const items = clipboardData.items;
+            let imageFound = false;
+
+            // 1. Direct File / Blob Image Paste
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    imageFound = true;
+                    e.preventDefault(); // Iwasan ang unstyled raw paste
+                    
+                    const file = items[i].getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        const ph = document.getElementById('primary-placeholder');
+                        if (ph && targetContainerId === 'box-primary-container') {
+                            ph.style.display = 'none';
+                        }
+                        buildWordImageNode(ev.target.result, targetContainerId);
+                        autoSaveState();
+                    };
+                    reader.readAsDataURL(file);
+                    break;
+                }
+            }
+
+            // 2. Fallback: Handling copied HTML elements / rich text images (e.g. from Word)
+            if (!imageFound) {
+                const htmlData = clipboardData.getData('text/html');
+                if (htmlData && htmlData.includes('<img')) {
+                    e.preventDefault();
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = htmlData;
+                    const imgs = tempDiv.querySelectorAll('img');
+                    imgs.forEach(img => {
+                        if (img.src) {
+                            buildWordImageNode(img.src, targetContainerId);
+                        }
+                    });
+                    autoSaveState();
+                }
+            }
+        }
+
+        // Maglagay ng paste listener sa 4 interactive boxes sa A4 (kabilang ang Page 2)
+        const primaryBox = document.getElementById('box-primary-container');
+        const secondaryBox = document.getElementById('box-secondary-container');
+        const mainTextBox = document.getElementById('preview-main-text');
+        const pageTwoBox = document.getElementById('preview-page-two-main-text');
+
+        primaryBox.addEventListener('paste', (e) => handleClipboardPasteImage(e, 'box-primary-container'));
+        secondaryBox.addEventListener('paste', (e) => handleClipboardPasteImage(e, 'box-secondary-container'));
+        mainTextBox.addEventListener('paste', (e) => handleClipboardPasteImage(e, 'preview-main-text'));
+        pageTwoBox.addEventListener('paste', (e) => handleClipboardPasteImage(e, 'preview-page-two-main-text'));
+
         document.getElementById('input-primary-gallery').addEventListener('change', function(e) {
             Array.from(e.target.files).forEach(file => {
                 const reader = new FileReader();
@@ -1473,13 +1540,14 @@
             const primaryImgs = Array.from(document.querySelectorAll('#box-primary-container > .wrapper-image-node')).map(serializeImageNode);
             const secondaryImgs = Array.from(document.querySelectorAll('#box-secondary-container > .wrapper-image-node')).map(serializeImageNode);
             const mainTextImgs = Array.from(document.querySelectorAll('#preview-main-text > .wrapper-image-node')).map(serializeImageNode);
+            const page2TextImgs = Array.from(document.querySelectorAll('#preview-page-two-main-text > .wrapper-image-node')).map(serializeImageNode);
             const floatingImgs = allImageNodes.filter(n => n.classList.contains('layout-in-front')).map(serializeImageNode);
 
             const total1Box = document.getElementById('draggable-total-box-1');
             const total2Box = document.getElementById('draggable-total-box-2');
 
             return {
-                version: "2.3",
+                version: "2.4",
                 clientName: document.getElementById("input-client-name").value,
                 date: document.getElementById("input-date").value,
                 jo: document.getElementById("input-jo-text").value,
@@ -1542,6 +1610,7 @@
                     primary: primaryImgs,
                     secondary: secondaryImgs,
                     mainText: mainTextImgs,
+                    page2Text: page2TextImgs,
                     floating: floatingImgs
                 }
             };
@@ -1652,6 +1721,11 @@
                 if (data.imagesData.mainText) {
                     data.imagesData.mainText.forEach(imgData => {
                         buildWordImageNode(imgData.src, 'preview-main-text', imgData);
+                    });
+                }
+                if (data.imagesData.page2Text) {
+                    data.imagesData.page2Text.forEach(imgData => {
+                        buildWordImageNode(imgData.src, 'preview-page-two-main-text', imgData);
                     });
                 }
                 if (data.imagesData.floating) {
