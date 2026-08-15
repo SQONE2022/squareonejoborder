@@ -243,6 +243,41 @@
             padding: 0 5px;
         }
 
+        .align-btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .align-btn {
+            flex: 1;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            background-color: #fafafa;
+            padding: 10px 0;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .align-btn svg {
+            display: block;
+            pointer-events: none;
+        }
+
+        .align-btn:hover {
+            background-color: #eee;
+        }
+
+        .align-btn.active {
+            background-color: #7A0A0A;
+            color: #ffffff;
+            border-color: #7A0A0A;
+        }
+
         .form-controls-wrapper {
             display: flex;
             flex-direction: column;
@@ -818,6 +853,20 @@
                         <option value="72px">72px</option>
                     </select>
                 </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Text Align</label>
+                    <div class="align-btn-group" id="align-btn-group">
+                        <button type="button" class="align-btn active" data-align="left" onclick="setTextAlign('left')" title="Align Left">
+                            <svg viewBox="0 0 24 16" width="20" height="14"><rect x="0" y="0" width="24" height="2.4" rx="1.2" fill="currentColor"/><rect x="0" y="6.8" width="16" height="2.4" rx="1.2" fill="currentColor"/><rect x="0" y="13.6" width="20" height="2.4" rx="1.2" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" class="align-btn" data-align="center" onclick="setTextAlign('center')" title="Align Center">
+                            <svg viewBox="0 0 24 16" width="20" height="14"><rect x="0" y="0" width="24" height="2.4" rx="1.2" fill="currentColor"/><rect x="4" y="6.8" width="16" height="2.4" rx="1.2" fill="currentColor"/><rect x="2" y="13.6" width="20" height="2.4" rx="1.2" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" class="align-btn" data-align="right" onclick="setTextAlign('right')" title="Align Right">
+                            <svg viewBox="0 0 24 16" width="20" height="14"><rect x="0" y="0" width="24" height="2.4" rx="1.2" fill="currentColor"/><rect x="8" y="6.8" width="16" height="2.4" rx="1.2" fill="currentColor"/><rect x="4" y="13.6" width="20" height="2.4" rx="1.2" fill="currentColor"/></svg>
+                        </button>
+                    </div>
+                </div>
             </fieldset>
 
             <div class="form-row-2-col">
@@ -1125,6 +1174,7 @@
         const fontStyleSelect = document.getElementById('input-font-family');
         const fontSizeSelect = document.getElementById('input-font-size');
         const textColorInput = document.getElementById('input-text-color');
+        const alignBtnGroup = document.getElementById('align-btn-group');
 
         const mainTextEl = document.getElementById('preview-main-text');
         const secondaryTextEl = document.getElementById('box-secondary-container');
@@ -1202,6 +1252,15 @@
                 if (computed.color) {
                     textColorInput.value = rgbToHex(computed.color);
                 }
+            }
+
+            // Sync alignment buttons to the active text box's block alignment
+            // (alignment is a block-level property of the container being
+            // edited, not something that can meaningfully differ per
+            // highlighted run of text).
+            if (activeTextBox) {
+                const alignComputed = window.getComputedStyle(activeTextBox).textAlign;
+                setActiveAlignBtn(alignComputed);
             }
         }
 
@@ -1394,6 +1453,28 @@
         function setTextColor(color) {
             applyStyleToSelection('color', color);
             textColorInput.value = color;
+        }
+
+        function setActiveAlignBtn(align) {
+            if (!alignBtnGroup) return;
+            const normalized = (align || 'left').toLowerCase();
+            alignBtnGroup.querySelectorAll('.align-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.align === normalized);
+            });
+        }
+
+        // Alignment is a block-level (paragraph) property in CSS, not a
+        // character-level one like color/font -- text-align has no effect
+        // wrapped around a run of inline text, only on the block container.
+        // So this always sets text-align on the active editable box itself
+        // (or on the specific block ancestor when editing inside the shared
+        // preview/page-two boxes), rather than trying to wrap the selection
+        // in a span the way applyStyleToSelection does for color/font.
+        function setTextAlign(align) {
+            if (!activeTextBox) return;
+            activeTextBox.style.textAlign = align;
+            setActiveAlignBtn(align);
+            autoSaveState();
         }
 
         function rgbToHex(rgb) {
@@ -1829,7 +1910,7 @@
             const total2Box = document.getElementById('draggable-total-box-2');
 
             return {
-                version: "2.8",
+                version: "2.9",
                 clientName: document.getElementById("input-client-name").value,
                 date: document.getElementById("input-date").value,
                 jo: document.getElementById("input-jo-text").value,
@@ -1884,22 +1965,29 @@
                 fontMain: {
                     family: mainTextEl.style.fontFamily,
                     size: mainTextEl.style.fontSize,
-                    color: mainTextEl.style.color
+                    color: mainTextEl.style.color,
+                    align: mainTextEl.style.textAlign
                 },
                 fontSecondary: {
                     family: secondaryTextEl.style.fontFamily,
                     size: secondaryTextEl.style.fontSize,
-                    color: secondaryTextEl.style.color
+                    color: secondaryTextEl.style.color,
+                    align: secondaryTextEl.style.textAlign
                 },
                 fontTotal1: {
                     family: total1El ? total1El.style.fontFamily : "",
                     size: total1El ? total1El.style.fontSize : "",
-                    color: total1El ? total1El.style.color : ""
+                    color: total1El ? total1El.style.color : "",
+                    align: total1El ? total1El.style.textAlign : ""
                 },
                 fontTotal2: {
                     family: total2El ? total2El.style.fontFamily : "",
                     size: total2El ? total2El.style.fontSize : "",
-                    color: total2El ? total2El.style.color : ""
+                    color: total2El ? total2El.style.color : "",
+                    align: total2El ? total2El.style.textAlign : ""
+                },
+                fontPageTwo: {
+                    align: pageTwoTextEl.style.textAlign
                 },
                 
                 imagesData: {
@@ -1992,24 +2080,32 @@
                 if (data.fontMain.family) mainTextEl.style.fontFamily = data.fontMain.family;
                 if (data.fontMain.size) mainTextEl.style.fontSize = data.fontMain.size;
                 if (data.fontMain.color) mainTextEl.style.color = data.fontMain.color;
+                if (data.fontMain.align) mainTextEl.style.textAlign = data.fontMain.align;
             }
 
             if (data.fontSecondary) {
                 if (data.fontSecondary.family) secondaryTextEl.style.fontFamily = data.fontSecondary.family;
                 if (data.fontSecondary.size) secondaryTextEl.style.fontSize = data.fontSecondary.size;
                 if (data.fontSecondary.color) secondaryTextEl.style.color = data.fontSecondary.color;
+                if (data.fontSecondary.align) secondaryTextEl.style.textAlign = data.fontSecondary.align;
             }
 
             if (data.fontTotal1 && total1El) {
                 if (data.fontTotal1.family) total1El.style.fontFamily = data.fontTotal1.family;
                 if (data.fontTotal1.size) total1El.style.fontSize = data.fontTotal1.size;
                 if (data.fontTotal1.color) total1El.style.color = data.fontTotal1.color;
+                if (data.fontTotal1.align) total1El.style.textAlign = data.fontTotal1.align;
             }
 
             if (data.fontTotal2 && total2El) {
                 if (data.fontTotal2.family) total2El.style.fontFamily = data.fontTotal2.family;
                 if (data.fontTotal2.size) total2El.style.fontSize = data.fontTotal2.size;
                 if (data.fontTotal2.color) total2El.style.color = data.fontTotal2.color;
+                if (data.fontTotal2.align) total2El.style.textAlign = data.fontTotal2.align;
+            }
+
+            if (data.fontPageTwo && data.fontPageTwo.align) {
+                pageTwoTextEl.style.textAlign = data.fontPageTwo.align;
             }
 
             document.querySelectorAll('.wrapper-image-node').forEach(node => node.remove());
@@ -2047,6 +2143,7 @@
             }
 
             checkPageTwoContent();
+            syncControlsWithSelection();
         }
 
         function triggerOpenInNewTab() {
