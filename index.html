@@ -993,7 +993,7 @@
                 <button class="submit-btn" type="button" style="background-color: #555;" onclick="triggerOpenInNewTab()">
                     📂 Open Project
                 </button>
-                <input type="file" id="openProjectFile" accept=".sq1,.json" style="display:none" onchange="openProjectInNewTab(event)">
+                <input type="file" id="openProjectFile" accept=".sq1,.json,.txt" style="display:none" onchange="openProjectInNewTab(event)">
             </div>
         </div>
 
@@ -1190,15 +1190,6 @@
         let activeTextBox = mainTextEl;
         let lastSelectionRange = null;
 
-        /* ============================================================
-           FIX: Only remember a selection range when real text is
-           highlighted (range is NOT collapsed). Previously this ran on
-           every selectionchange event -- including the moment the user
-           clicks a color swatch (which collapses/clears the in-editor
-           selection right before the click fires) -- so the saved
-           range got wiped and the color fell back to styling the whole
-           text box instead of just the highlighted words.
-           ============================================================ */
         function saveCurrentSelection() {
             const selection = window.getSelection();
             if (selection.rangeCount > 0) {
@@ -1209,10 +1200,6 @@
                 
                 if (editableAncestor) {
                     activeTextBox = editableAncestor;
-                    // Only overwrite lastSelectionRange with a REAL (non-collapsed)
-                    // highlight. A collapsed range (just a blinking cursor, or the
-                    // selection getting cleared when clicking a swatch/button)
-                    // should never erase a previously highlighted range.
                     if (!range.collapsed) {
                         lastSelectionRange = range.cloneRange();
                     }
@@ -1254,10 +1241,6 @@
                 }
             }
 
-            // Sync alignment buttons to the active text box's block alignment
-            // (alignment is a block-level property of the container being
-            // edited, not something that can meaningfully differ per
-            // highlighted run of text).
             if (activeTextBox) {
                 const alignComputed = window.getComputedStyle(activeTextBox).textAlign;
                 setActiveAlignBtn(alignComputed);
@@ -1326,13 +1309,6 @@
             autoSaveState();
         });
 
-        /* NA-UPDATE NA APPLIER FUNCTION PARA SA HIGHLIGHTED TEXT AT WALANG HIGHLIGHT */
-        // A leftover empty <span> (no text, no image) can still be tall if it
-        // carries a big font-size -- inline elements contribute to line-box
-        // height (the CSS "strut") even with zero visible content. Repeated
-        // font-size/color changes on the same text can leave these behind
-        // when the original styled range gets split during extraction. This
-        // removes them so they stop pushing real text down / leaving gaps.
         function pruneEmptyStyleSpans(container) {
             if (!container) return;
             let removedAny = true;
@@ -1348,24 +1324,13 @@
             }
         }
 
-        // When the same text gets re-styled more than once, the new span ends
-        // up nested inside an older wrapper span from the previous change
-        // (e.g. an outer span still carrying an old, larger font-size, with
-        // the new span as its only child). Even though the old outer span is
-        // no longer what's visibly rendered (the inner span overrides it),
-        // the outer span's OWN font-size still counts toward the line's
-        // height (the CSS "strut"), leaving a residual gap that pruning empty
-        // spans alone can't catch since this outer span isn't empty. This
-        // walks up from the freshly styled span and strips the just-changed
-        // property off any purely single-child wrapper ancestor, unwrapping
-        // it entirely if nothing else is left styled on it.
         function collapseRedundantAncestorStyle(span, styleProp, container) {
             let current = span.parentNode;
             while (current && current !== container && current.nodeType === Node.ELEMENT_NODE && current.tagName === 'SPAN') {
-                if (current.childNodes.length !== 1) break; // ancestor holds other content too -- leave it alone
+                if (current.childNodes.length !== 1) break;
                 const next = current.parentNode;
                 if (current.style[styleProp]) {
-                    current.style[styleProp] = ''; // redundant now, the inner span already overrides it
+                    current.style[styleProp] = '';
                 }
                 if (!current.getAttribute('style') || current.getAttribute('style').trim() === '') {
                     while (current.firstChild) {
@@ -1387,18 +1352,10 @@
                 range = lastSelectionRange;
             }
 
-            // IMPORTANT: range.collapsed being false does not guarantee there is
-            // real text inside it -- a "selection" that only spans whitespace,
-            // or one that got desynced from the live DOM (e.g. after clicking a
-            // <select> dropdown), can still report collapsed=false while
-            // containing nothing visible. Wrapping that in a big font-size span
-            // creates an invisible blank gap. So we also require actual
-            // non-whitespace text content before treating it as a real highlight.
             const hasRealText = range && range.toString().replace(/\u00a0/g, ' ').trim().length > 0;
             const isTextSelected = hasRealText && !range.collapsed && activeTextBox && activeTextBox.contains(range.commonAncestorContainer);
 
             if (isTextSelected) {
-                // I-apply lang sa eksaktong highlighted text
                 const span = document.createElement('span');
                 if (styleProp === 'fontFamily') span.style.fontFamily = value;
                 if (styleProp === 'color') span.style.color = value;
@@ -1409,18 +1366,10 @@
                     span.appendChild(extracted);
                     range.insertNode(span);
 
-                    // Merge/clean up any empty or split text nodes left behind
-                    // by extractContents(), which is what causes stray blank gaps.
                     if (span.parentNode) span.parentNode.normalize();
                     pruneEmptyStyleSpans(activeTextBox);
                     collapseRedundantAncestorStyle(span, styleProp, activeTextBox);
 
-                    // Keep the styled span tracked internally so the user can
-                    // immediately apply another style (e.g. color right after
-                    // size) without re-highlighting -- but don't force the
-                    // browser to visibly re-select the whole span. Visibly
-                    // re-selecting it left a solid highlighted block behind
-                    // every time a style changed, which looked like a bug.
                     const newRange = document.createRange();
                     newRange.selectNodeContents(span);
                     lastSelectionRange = newRange.cloneRange();
@@ -1428,13 +1377,12 @@
                     selection.removeAllRanges();
                     const caretRange = document.createRange();
                     caretRange.selectNodeContents(span);
-                    caretRange.collapse(false); // just a blinking cursor after the styled text, no visible highlight
+                    caretRange.collapse(false);
                     selection.addRange(caretRange);
                 } catch (e) {
                     console.error("Format selection error:", e);
                 }
             } else if (activeTextBox) {
-                // Kung walang nakahighlight (o blangko lang), papalitan lang ang default base style ng buong box
                 if (styleProp === 'fontFamily') activeTextBox.style.fontFamily = value;
                 if (styleProp === 'color') activeTextBox.style.color = value;
                 if (styleProp === 'fontSize') activeTextBox.style.fontSize = value;
@@ -1463,13 +1411,6 @@
             });
         }
 
-        // Alignment is a block-level (paragraph) property in CSS, not a
-        // character-level one like color/font -- text-align has no effect
-        // wrapped around a run of inline text, only on the block container.
-        // So this always sets text-align on the active editable box itself
-        // (or on the specific block ancestor when editing inside the shared
-        // preview/page-two boxes), rather than trying to wrap the selection
-        // in a span the way applyStyleToSelection does for color/font.
         function setTextAlign(align) {
             if (!activeTextBox) return;
             activeTextBox.style.textAlign = align;
@@ -1604,7 +1545,6 @@
             });
         }
 
-        /* MAKES FLOATING TEXT BOX RESIZABLE */
         function makeTextBoxResizable(boxId) {
             const wrapper = document.getElementById(boxId);
             if (!wrapper) return;
@@ -2150,18 +2090,122 @@
             document.getElementById('openProjectFile').click();
         }
 
+        /* ============================================================
+           MORE FORGIVING PROJECT-FILE PARSING
+           ------------------------------------------------------------
+           Previously this did a single strict JSON.parse(rawText) and
+           threw up a blocking alert the instant that failed -- which
+           happens for perfectly openable files whenever:
+             - the file was saved/renamed with a different extension
+               (.txt, no extension, etc.) instead of exactly ".sq1"
+             - a text/BOM character got prepended by the OS or a text
+               editor when the file was resaved
+             - the file has trailing/leading whitespace or a stray
+               newline
+             - the JSON got wrapped in something else (e.g. copy-pasted
+               into a note along with other text)
+           None of those actually mean the project data is unusable --
+           the real JSON is still in there. So instead of failing on
+           the first strict parse, we now: 1) strip a BOM if present,
+           2) trim, 3) try a normal parse, and if that still fails,
+           4) fall back to extracting the outermost {...} block and
+           parsing that. Only if every attempt fails do we tell the
+           user, and even then we no longer block/alert -- we log it
+           and let them keep working instead of throwing an interrupting
+           popup for what is usually just a harmless extension/format
+           mismatch.
+           ============================================================ */
+        function tryParseProjectJSON(rawText) {
+            if (typeof rawText !== 'string') return null;
+
+            // Strip a UTF-8 BOM if present, then trim stray whitespace.
+            let cleaned = rawText.replace(/^\uFEFF/, '').trim();
+            if (!cleaned) return null;
+
+            // Attempt 1: parse as-is.
+            try {
+                return JSON.parse(cleaned);
+            } catch (e) { /* fall through */ }
+
+            // Attempt 2: the file may have extra text/notes around the
+            // actual JSON object -- pull out the outermost {...} block.
+            const firstBrace = cleaned.indexOf('{');
+            const lastBrace = cleaned.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace > firstBrace) {
+                const candidate = cleaned.slice(firstBrace, lastBrace + 1);
+                try {
+                    return JSON.parse(candidate);
+                } catch (e) { /* fall through */ }
+            }
+
+            return null;
+        }
+
+        /* ============================================================
+           FRIENDLIER "WHY WON'T THIS OPEN" DIAGNOSIS
+           ------------------------------------------------------------
+           A file that fails tryParseProjectJSON isn't always a broken
+           .sq1 -- often it's simply the WRONG kind of file that happens
+           to carry a .sq1/.json/.txt name or extension (e.g. someone
+           renamed a PDF export, or picked a random file by mistake).
+           Detecting the real file type from its own byte signature
+           lets us tell the user specifically what went wrong instead
+           of a generic "can't open" message.
+           ============================================================ */
+        function diagnoseUnreadableFile(rawText) {
+            const head = (rawText || '').slice(0, 8);
+
+            if (head.startsWith('%PDF-')) {
+                return "Ito ay PDF file (yung na-'Generate & Print PDF'), hindi editable project file. I-open yung .sq1 na na-download gamit ang '💾 Save Project' button.";
+            }
+            if (head.startsWith('PK\u0003\u0004')) {
+                return "Mukhang ibang document/archive file ito (hal. Word/Excel/zip), hindi .sq1 project file.";
+            }
+            if (head.startsWith('\x89PNG') || head.startsWith('\xFF\xD8\xFF')) {
+                return "Ito ay image file, hindi .sq1 project file.";
+            }
+            return "Hindi na-recognize na project file ang na-pili -- siguraduhing yung .sq1 na na-download gamit ang '💾 Save Project' ang bubuksan.";
+        }
+
+        function showFileOpenNotice(message) {
+            let toast = document.getElementById('file-open-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'file-open-toast';
+                toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 18px; border-radius:8px; font-size:13px; font-family:Arial, sans-serif; max-width:420px; text-align:center; z-index:99999; box-shadow:0 4px 14px rgba(0,0,0,0.3); transition:opacity 0.3s;';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            toast.style.display = 'block';
+
+            clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => { toast.style.display = 'none'; }, 300);
+            }, 5000);
+        }
+
         function openProjectInNewTab(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = async function(e) {
-                try {
-                    const parsedData = JSON.parse(e.target.result);
+                const rawText = e.target.result;
+                const parsedData = tryParseProjectJSON(rawText);
+
+                if (parsedData) {
                     await saveLargeProject('pending_sq1_project', parsedData);
                     window.open(window.location.href.split('?')[0], '_blank');
-                } catch(err) {
-                    alert("Hindi mabuksan ang file. Siguraduhing valid na .sq1 file ito.");
+                } else {
+                    // Don't block the user with a hard error popup -- show
+                    // a brief, specific, non-blocking notice instead, and
+                    // log details for troubleshooting. They can keep
+                    // working in the current tab or pick another file.
+                    const reason = diagnoseUnreadableFile(rawText);
+                    showFileOpenNotice(reason);
+                    console.warn("Could not read project data from this file:", file.name, "-", reason);
                 }
                 event.target.value = '';
             };
@@ -2194,11 +2238,6 @@
         });
 
         function getProjectFileName() {
-            // Prefer the left-form inputs (fastest path). If the user typed
-            // directly into the preview table instead of the form fields,
-            // fall back to reading those same values from the live preview
-            // cells so the saved/printed filename still reflects what's
-            // actually shown on the document, not just what's in the form.
             const jobNumberInput = document.getElementById("input-jo-text").value.trim();
             const clientNameInput = document.getElementById("input-client-name").value.trim();
             const teamNameInput = document.getElementById("input-team").value.trim();
