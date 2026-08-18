@@ -2194,9 +2194,23 @@
         });
 
         function getProjectFileName() {
-            const jobNumber = document.getElementById("input-jo-text").value.trim() || "JOB";
-            const clientName = document.getElementById("input-client-name").value.trim();
-            const teamName = document.getElementById("input-team").value.trim();
+            // Prefer the left-form inputs (fastest path). If the user typed
+            // directly into the preview table instead of the form fields,
+            // fall back to reading those same values from the live preview
+            // cells so the saved/printed filename still reflects what's
+            // actually shown on the document, not just what's in the form.
+            const jobNumberInput = document.getElementById("input-jo-text").value.trim();
+            const clientNameInput = document.getElementById("input-client-name").value.trim();
+            const teamNameInput = document.getElementById("input-team").value.trim();
+
+            const jobNumberPreview = document.getElementById("preview-jo-label").innerText.trim();
+            const clientNamePreview = document.getElementById("preview-client-name").innerText.trim();
+            const teamNamePreview = document.getElementById("preview-team-label").innerText.trim();
+
+            const jobNumber = jobNumberInput || jobNumberPreview || "JOB";
+            const clientName = clientNameInput || clientNamePreview;
+            const teamName = teamNameInput || teamNamePreview;
+
             let fileName = `${jobNumber}. ${clientName} ${teamName}`.trim();
             fileName = fileName.replace(/[\\/:*?"<>|]/g, "");
             return fileName;
